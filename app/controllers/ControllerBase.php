@@ -43,14 +43,6 @@ class ControllerBase extends Controller
             $logger->log($log, Logger::INFO);
         }
 
-
-        // 检查登录
-        $this->_user_id = $this->session->get('user_id');
-        if (!$this->_user_id || !$this->session->get('isLogin')) {
-            header('Location:/login');
-            exit;
-        }
-
     }
 
 

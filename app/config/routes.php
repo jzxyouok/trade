@@ -153,4 +153,15 @@ $router->add(
 );
 
 
+$router->add(
+    "/notice/:params",
+    array(
+        'namespace' => 'MyApp\Controllers',
+        'controller' => 'payment',
+        'action' => 'notice',
+        'param' => 1
+    )
+);
+
+
 return $router;
