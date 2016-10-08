@@ -28,13 +28,13 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `logsLogin` (
   `id` int(11) UNSIGNED NOT NULL,
-  `userID` int(11) DEFAULT '0',
-  `IP` varchar(15) DEFAULT '',
+  `user_id` int(11) DEFAULT '0',
+  `ip` varchar(15) DEFAULT '',
   `location` varchar(32) DEFAULT '',
-  `userAgent` varchar(225) DEFAULT '',
+  `user_agent` varchar(225) DEFAULT '',
   `referer` text,
   `result` tinyint(4) DEFAULT '0',
-  `createTime` datetime DEFAULT '0000-01-01 00:00:00'
+  `create_time` datetime DEFAULT '0000-01-01 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='登录日志';
 
 -- --------------------------------------------------------
@@ -54,15 +54,15 @@ CREATE TABLE `resources` (
   `status` tinyint(3) DEFAULT '1',
   `icon` varchar(64) DEFAULT '',
   `remark` varchar(64) DEFAULT '',
-  `createTime` datetime DEFAULT '0000-01-01 00:00:00',
-  `updateTime` datetime DEFAULT '0000-01-01 00:00:00'
+  `create_time` datetime DEFAULT '0000-01-01 00:00:00',
+  `update_time` datetime DEFAULT '0000-01-01 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 资源';
 
 --
 -- 转存表中的数据 `resources`
 --
 
-INSERT INTO `resources` (`id`, `app`, `name`, `resource`, `type`, `parent`, `sort`, `status`, `icon`, `remark`, `createTime`, `updateTime`) VALUES
+INSERT INTO `resources` (`id`, `app`, `name`, `resource`, `type`, `parent`, `sort`, `status`, `icon`, `remark`, `create_time`, `update_time`) VALUES
 (1000, '', '用户管理', '/users/index', 'menu', 0, 0, 1, '', '', '0000-01-01 00:00:00', '0000-01-01 00:00:00'),
 (1001, '', '角色管理', '/roles/index', 'menu', 0, 0, 1, '', '', '0000-01-01 00:00:00', '0000-01-01 00:00:00'),
 (1002, '', '资源管理', '/resources/index', 'menu', 0, 0, 1, '', '', '0000-01-01 00:00:00', '0000-01-01 00:00:00');
@@ -75,8 +75,8 @@ INSERT INTO `resources` (`id`, `app`, `name`, `resource`, `type`, `parent`, `sor
 
 CREATE TABLE `roleResource` (
   `id` int(11) UNSIGNED NOT NULL,
-  `roleID` int(11) DEFAULT '0',
-  `resourceID` int(11) DEFAULT '0'
+  `role_id` int(11) DEFAULT '0',
+  `resource_id` int(11) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 角色&资源';
 
 -- --------------------------------------------------------
@@ -91,15 +91,15 @@ CREATE TABLE `roles` (
   `parent` int(10) DEFAULT '0',
   `remark` varchar(255) DEFAULT '',
   `status` tinyint(3) DEFAULT '1',
-  `createTime` datetime DEFAULT '0000-01-01 00:00:00',
-  `updateTime` datetime DEFAULT '0000-01-01 00:00:00'
+  `create_time` datetime DEFAULT '0000-01-01 00:00:00',
+  `update_time` datetime DEFAULT '0000-01-01 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 角色';
 
 --
 -- 转存表中的数据 `roles`
 --
 
-INSERT INTO `roles` (`id`, `name`, `parent`, `remark`, `status`, `createTime`, `updateTime`) VALUES
+INSERT INTO `roles` (`id`, `name`, `parent`, `remark`, `status`, `create_time`, `update_time`) VALUES
 (100, '管理员', 0, '', 1, '0000-01-01 00:00:00', '0000-01-01 00:00:00');
 
 -- --------------------------------------------------------
@@ -110,9 +110,9 @@ INSERT INTO `roles` (`id`, `name`, `parent`, `remark`, `status`, `createTime`, `
 
 CREATE TABLE `tickets` (
   `id` int(11) UNSIGNED NOT NULL,
-  `userID` int(11) DEFAULT '0',
+  `user_id` int(11) DEFAULT '0',
   `ticket` varchar(255) DEFAULT '',
-  `createTime` datetime DEFAULT '0000-01-01 00:00:00'
+  `create_time` datetime DEFAULT '0000-01-01 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -123,8 +123,8 @@ CREATE TABLE `tickets` (
 
 CREATE TABLE `userRole` (
   `id` int(11) UNSIGNED NOT NULL,
-  `userID` int(11) DEFAULT '0',
-  `roleID` int(11) DEFAULT '0'
+  `user_id` int(11) DEFAULT '0',
+  `role_id` int(11) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 用户&角色';
 
 -- --------------------------------------------------------
@@ -140,16 +140,16 @@ CREATE TABLE `users` (
   `name` varchar(64) DEFAULT '',
   `status` tinyint(3) DEFAULT '1',
   `phone` varchar(20) DEFAULT '',
-  `secretKey` varchar(64) DEFAULT '',
-  `createTime` datetime DEFAULT '0000-01-01 00:00:00',
-  `updateTime` datetime DEFAULT '0000-01-01 00:00:00'
+  `secret_key` varchar(64) DEFAULT '',
+  `create_time` datetime DEFAULT '0000-01-01 00:00:00',
+  `update_time` datetime DEFAULT '0000-01-01 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 用户';
 
 --
 -- 转存表中的数据 `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `password`, `name`, `status`, `createTime`, `updateTime`) VALUES
+INSERT INTO `users` (`id`, `username`, `password`, `name`, `status`, `create_time`, `update_time`) VALUES
 (10000, 'joe@xxtime.com', '', 'Joe Chu', 1, '0000-01-01 00:00:00', '0000-01-01 00:00:00'),
 (10001, 'demo@xxtime.com', '', 'Demo', 1, '0000-01-01 00:00:00', '0000-01-01 00:00:00');
 
@@ -162,7 +162,7 @@ INSERT INTO `users` (`id`, `username`, `password`, `name`, `status`, `createTime
 --
 ALTER TABLE `logsLogin`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `userID` (`userID`);
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `resources`
@@ -176,8 +176,8 @@ ALTER TABLE `resources`
 --
 ALTER TABLE `roleResource`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `roleID` (`roleID`),
-  ADD KEY `resourceID` (`resourceID`);
+  ADD KEY `role_id` (`role_id`),
+  ADD KEY `resource_id` (`resource_id`);
 
 --
 -- Indexes for table `roles`
@@ -197,8 +197,8 @@ ALTER TABLE `tickets`
 --
 ALTER TABLE `userRole`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `userID` (`userID`),
-  ADD KEY `roleID` (`roleID`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `role_id` (`role_id`);
 
 --
 -- Indexes for table `users`

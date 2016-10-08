@@ -13,7 +13,7 @@ class ControllerBase extends Controller
 {
 
     public $_app;
-    public $_userID;
+    public $_user_id;
 
 
     public function beforeExecuteRoute(Dispatcher $dispatcher)
@@ -45,8 +45,8 @@ class ControllerBase extends Controller
 
 
         // 检查登录
-        $this->_userID = $this->session->get('userID');
-        if (!$this->_userID || !$this->session->get('isLogin')) {
+        $this->_user_id = $this->session->get('user_id');
+        if (!$this->_user_id || !$this->session->get('isLogin')) {
             header('Location:/login');
             exit;
         }

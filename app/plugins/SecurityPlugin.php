@@ -54,7 +54,7 @@ class SecurityPlugin extends Plugin
 
 
         // 用户ID
-        $userID = $this->session->get('userID');
+        $user_id = $this->session->get('user_id');
 
 
         // 定义角色
@@ -78,7 +78,7 @@ class SecurityPlugin extends Plugin
         if ($this->config->setting->RBAC) {
             // 使用自己的权限控制
             $authModel = new Auth();
-            $privateResources = $authModel->getAclResource($userID, $app);
+            $privateResources = $authModel->getAclResource($user_id, $app);
             $allResources = $authModel->getAclResource(10000, $app);
         } else {
             // 使用BOSS中心的权限控制
@@ -156,8 +156,8 @@ class SecurityPlugin extends Plugin
 
 
         $acl = $this->getAcl($dispatcher);
-        $userID = $this->session->get('userID');
-        if (!isset($userID)) {
+        $user_id = $this->session->get('user_id');
+        if (!isset($user_id)) {
             $role = 'Guests';
         } else {
             $role = 'Users';

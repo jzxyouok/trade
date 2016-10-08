@@ -35,7 +35,7 @@ class SsoController extends ControllerBase
             $password = trim($this->request->getPost('password', 'string'));
             $captcha = $this->request->getPost('captcha', 'alphanum');
             $ipAddress = $this->request->getClientAddress();
-            $userAgent = $this->request->getUserAgent();
+            $user_agent = $this->request->getUserAgent();
             $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
 
 
@@ -58,10 +58,10 @@ class SsoController extends ControllerBase
             // 登录日志
             $location = $this->utilsModel->getLocation($ipAddress);
             $log = array(
-                'userID' => $userData['id'],
-                'IP' => $ipAddress,
+                'user_id' => $userData['id'],
+                'ip' => $ipAddress,
                 'location' => $location,
-                'userAgent' => $userAgent,
+                'user_agent' => $user_agent,
                 'referer' => $referer,
                 'result' => $verifyResult ? 1 : 0,
             );
@@ -77,7 +77,7 @@ class SsoController extends ControllerBase
 
 
             // 设置SESSION
-            $this->session->set('userID', $userData['id']);
+            $this->session->set('user_id', $userData['id']);
             $this->session->set('username', $userData['username']);
             $this->session->set('name', $userData['name']);
 
@@ -100,7 +100,7 @@ class SsoController extends ControllerBase
 
 
             // 检查令牌
-            if (empty($userData['secretKey'])) {
+            if (empty($userData['secret_key'])) {
                 $this->session->set('isLogin', 1);
                 $this->authModel->securityCheck($userData, $location);
                 header("Location:" . $redirect);
@@ -126,11 +126,11 @@ class SsoController extends ControllerBase
         if ($_POST) {
             $code = $this->request->get('code', 'int');
 
-            $userID = $this->session->get('userID');
-            $user = $this->authModel->getUser($userID);
+            $user_id = $this->session->get('user_id');
+            $user = $this->authModel->getUser($user_id);
 
             $otp = new PHPGangsta_GoogleAuthenticator();
-            $checkResult = $otp->verifyCode($user['secretKey'], $code, 2);    // 2 = 2*30sec clock tolerance
+            $checkResult = $otp->verifyCode($user['secret_key'], $code, 2);    // 2 = 2*30sec clock tolerance
             $this->session->set('redirect', null);
             if (!$checkResult) {
                 Utils::tips('warning', 'Authenticator Code Is Error');
@@ -160,19 +160,19 @@ class SsoController extends ControllerBase
         $otp = new PHPGangsta_GoogleAuthenticator();
         if ($_POST) { // 验证 开启二次验证是否正确
             $code = $this->request->get('code', 'int');
-            $secretKey = $this->session->get('secretKey');
-            $checkResult = $otp->verifyCode($secretKey, $code, 2);
+            $secret_key = $this->session->get('secret_key');
+            $checkResult = $otp->verifyCode($secret_key, $code, 2);
             if (!$checkResult) {
                 Utils::outputJSON(array('code' => 0, 'message' => 'Verify Success'));
-                $userID = $this->session->get('userID');
-                $this->authModel->setOTPKey($userID, $secretKey);
+                $user_id = $this->session->get('user_id');
+                $this->authModel->setOTPKey($user_id, $secret_key);
             }
             Utils::outputJSON(array('code' => 1, 'message' => 'Verify Failed'));
         }
-        $secretKey = $otp->createSecret(32);
-        $this->session->set('secretKey', $secretKey);
+        $secret_key = $otp->createSecret(32);
+        $this->session->set('secret_key', $secret_key);
         $username = urlencode('账号：') . $username;
-        $url = "otpauth://totp/{$username}?secret={$secretKey}&issuer=" . urlencode('XXTIME.COM');
+        $url = "otpauth://totp/{$username}?secret={$secret_key}&issuer=" . urlencode('XXTIME.COM');
         $qrCode = new QrCode();
         $qrCode
             ->setText($url)
@@ -198,7 +198,7 @@ class SsoController extends ControllerBase
             Utils::outputJSON(array('code' => 1, 'message' => 'failed'));
         }
         $user = array(
-            'userID' => $user['id'],
+            'user_id' => $user['id'],
             'username' => $user['username'],
             'name' => $user['name']
         );

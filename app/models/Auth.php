@@ -59,7 +59,7 @@ class Auth extends Model
     public function getUserByTicket($ticket = '')
     {
         $dateTime = date('Y-m-d H:i:s', time() - 60);
-        $sql = "SELECT u.* FROM `users` u, `tickets` t WHERE u.id=t.userID AND t.ticket=:ticket AND t.createTime>'$dateTime'";
+        $sql = "SELECT u.* FROM `users` u, `tickets` t WHERE u.id=t.user_id AND t.ticket=:ticket AND t.create_time>'$dateTime'";
         $bind = array('ticket' => $ticket);
         // TODO :: 此处如使用$this->dbConnection时,外部程序使用file_get_contents(VerifyURL)调用时报错,直接访问VerifyURL没问题
         $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
@@ -75,35 +75,35 @@ class Auth extends Model
      */
     public function logsLogin($data = [])
     {
-        $data['createTime'] = date('Y-m-d H:i:s');
+        $data['create_time'] = date('Y-m-d H:i:s');
         DI::getDefault()->get('dbBackend')->insertAsDict("logsLogin", $data);
     }
 
 
     /**
-     * 设置二次验证secretKey
-     * @param int $userID
-     * @param string $secretKey
+     * 设置二次验证secret_key
+     * @param int $user_id
+     * @param string $secret_key
      * @return mixed
      */
-    public function setOTPKey($userID = 0, $secretKey = '')
+    public function setOTPKey($user_id = 0, $secret_key = '')
     {
-        $sql = "UPDATE `users` SET `secretKey`=:secretKey WHERE id=:id AND `secretKey`=''";
-        $bind = array('id' => $userID, 'secretKey' => $secretKey);
+        $sql = "UPDATE `users` SET `secret_key`=:secret_key WHERE id=:id AND `secret_key`=''";
+        $bind = array('id' => $user_id, 'secret_key' => $secret_key);
         return DI::getDefault()->get('dbBackend')->execute($sql, $bind);
     }
 
 
     /**
      * 检查登录失败次数
-     * @param string $IP
+     * @param string $ip
      * @return bool
      */
-    public function checkLoginTimes($IP = '')
+    public function checkLoginTimes($ip = '')
     {
         $dateTime = date('Y-m-d H:i:s', time() - 600);
-        $sql = "SELECT COUNT(1) count FROM `logsLogin` WHERE IP=:IP AND result=0 AND createTime>'$dateTime'";
-        $bind = array('IP' => $IP);
+        $sql = "SELECT COUNT(1) count FROM `logsLogin` WHERE ip=:ip AND result=0 AND create_time>'$dateTime'";
+        $bind = array('ip' => $ip);
         $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
         $data = $query->fetch();
@@ -137,10 +137,10 @@ class Auth extends Model
 
         $dateTime = date('Y-m-d H:i:s', time() - 86400 * 90);
         $sql = "SELECT t.location, COUNT(1) times
-              FROM(SELECT location FROM `logsLogin` WHERE userID=:userID AND location IS NOT null AND result=1 AND createTime>'$dateTime' ORDER BY id DESC LIMIT 300) t
+              FROM(SELECT location FROM `logsLogin` WHERE user_id=:user_id AND location IS NOT null AND result=1 AND create_time>'$dateTime' ORDER BY id DESC LIMIT 300) t
               GROUP BY t.location
               ORDER BY times DESC";
-        $bind = array('userID' => $userData['id']);
+        $bind = array('user_id' => $userData['id']);
         $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
         $data = $query->fetchAll();
@@ -179,17 +179,17 @@ class Auth extends Model
 
     /**
      * 生成票据Ticket
-     * @param int $userID
+     * @param int $user_id
      * @return mixed
      */
-    public function  createTicket($userID = 0)
+    public function  createTicket($user_id = 0)
     {
         $random = new Random();
         $ticket = $random->base64Safe(64);
         $data = [
-            'userID' => $userID,
+            'user_id' => $user_id,
             'ticket' => $ticket,
-            'createTime' => date('Y-m-d H:i:s')
+            'create_time' => date('Y-m-d H:i:s')
         ];
         DI::getDefault()->get('dbBackend')->insertAsDict("tickets", $data);
         return $ticket;
@@ -198,33 +198,33 @@ class Auth extends Model
 
     /**
      * 获取角色ID
-     * @param int $userID
+     * @param int $user_id
      * @return array
      */
-    public function getRoleID($userID = 0)
+    public function getRoleID($user_id = 0)
     {
-        $sql = "SELECT `roleID` FROM `userRole` WHERE userID=:userID";
-        $bind = array('userID' => $userID);
+        $sql = "SELECT `role_id` FROM `userRole` WHERE user_id=:user_id";
+        $bind = array('user_id' => $user_id);
         $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
         $data = $query->fetchAll();
         if (!$data) {
             return [];
         }
-        return array_column($data, 'roleID');
+        return array_column($data, 'role_id');
     }
 
 
     /**
      * 获取私有资源
-     * @param int $userID
+     * @param int $user_id
      * @param string $app
      * @return array
      */
-    public function getResources($userID = 0, $app = '')
+    public function getResources($user_id = 0, $app = '')
     {
         // 超级管理员
-        if ($userID == 10000) {
+        if ($user_id == 10000) {
             $sql = "SELECT res.id, res.name, res.resource, res.type, res.parent, res.icon
                 FROM `resources` res
                 WHERE res.status=1 AND res.app=:app
@@ -236,14 +236,14 @@ class Auth extends Model
         }
 
 
-        $roleID = $this->getRoleID($userID);
-        if (!$roleID) {
+        $role_id = $this->getRoleID($user_id);
+        if (!$role_id) {
             return [];
         }
-        $roleID = '"' . implode('","', $roleID) . '"';
+        $role_id = '"' . implode('","', $role_id) . '"';
         $sql = "SELECT res.id, res.name, res.resource, res.type, res.parent, res.icon
                 FROM `resources` res, `roleResource` rel
-                WHERE rel.resourceID=res.id AND res.status=1 AND rel.roleID IN ($roleID) AND res.app=:app
+                WHERE rel.resource_id=res.id AND res.status=1 AND rel.role_id IN ($role_id) AND res.app=:app
                 ORDER BY res.sort DESC";
         $bind = array('app' => $app);
         $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
@@ -254,13 +254,13 @@ class Auth extends Model
 
     /**
      * 获取私有资源acl格式
-     * @param int $userID
+     * @param int $user_id
      * @param string $app
      * @return array
      */
-    public function getAclResource($userID = 0, $app = '')
+    public function getAclResource($user_id = 0, $app = '')
     {
-        $data = $this->getResources($userID, $app);
+        $data = $this->getResources($user_id, $app);
         if (!$data) {
             return [];
         }

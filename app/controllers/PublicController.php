@@ -47,7 +47,7 @@ class PublicController extends Controller
 
 
         // 设置SESSION
-        $this->session->set('userID', $result['data']['userID']);
+        $this->session->set('user_id', $result['data']['user_id']);
         $this->session->set('username', $result['data']['username']);
         $this->session->set('name', $result['data']['name']);
 
