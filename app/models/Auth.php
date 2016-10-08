@@ -115,6 +115,69 @@ class Auth extends Model
 
 
     /**
+     * 安全检查
+     * @param array $userData
+     * @param string $location
+     * @return bool
+     */
+    public function securityCheck($userData = [], $location = '')
+    {
+        if (!$location) {
+            return false;
+        }
+        if (!$userData['phone']) {
+            return false;
+        }
+
+        // 是否配置SMS接口
+        $config = DI::getDefault()->get('config');
+        if (!$config->sms->appID) {
+            return false;
+        }
+
+        $dateTime = date('Y-m-d H:i:s', time() - 86400 * 90);
+        $sql = "SELECT t.location, COUNT(1) times
+              FROM(SELECT location FROM `logsLogin` WHERE userID=:userID AND location IS NOT null AND result=1 AND createTime>'$dateTime' ORDER BY id DESC LIMIT 300) t
+              GROUP BY t.location
+              ORDER BY times DESC";
+        $bind = array('userID' => $userData['id']);
+        $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        $data = $query->fetchAll();
+        if (count($data) <= 1) {
+            return true;
+        }
+        if ($data['0']['location'] == $location) {
+            return true;
+        }
+
+        if (($data['1']['location'] == $location) && ($data['1']['times'] > 2)) {
+            return true;
+        }
+
+        // 短信通知
+        $location = explode(' ', $location);
+        $local = !empty($location['1']) ? $location['1'] : '';
+        $local .= !empty($location['2']) ? $location['2'] : '';
+        $params = [
+            'time' => (new \DateTime('now', new \DateTimeZone('Asia/Shanghai')))->format('H点i分'),
+            'location' => $local
+        ];
+        include BASE_DIR . $config->application->pluginsDir . 'alidayu/TopSdk.php';
+        $c = new \TopClient;
+        $c->appkey = $config->sms->appID;
+        $c->secretKey = $config->sms->appKey;
+        $req = new \AlibabaAliqinFcSmsNumSendRequest;
+        $req->setSmsType("normal");
+        $req->setSmsFreeSignName($config->sms->signName);
+        $req->setSmsParam(json_encode($params));
+        $req->setRecNum($userData['phone']);
+        $req->setSmsTemplateCode($config->sms->tempSafety);
+        $c->execute($req);
+    }
+
+
+    /**
      * 生成票据Ticket
      * @param int $userID
      * @return mixed

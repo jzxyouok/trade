@@ -56,10 +56,11 @@ class SsoController extends ControllerBase
             $verifyResult = password_verify($password, $userData['password']);
 
             // 登录日志
+            $location = $this->utilsModel->getLocation($ipAddress);
             $log = array(
                 'userID' => $userData['id'],
                 'IP' => $ipAddress,
-                'location' => $this->utilsModel->getLocation($ipAddress),
+                'location' => $location,
                 'userAgent' => $userAgent,
                 'referer' => $referer,
                 'result' => $verifyResult ? 1 : 0,
@@ -101,6 +102,7 @@ class SsoController extends ControllerBase
             // 检查令牌
             if (empty($userData['secretKey'])) {
                 $this->session->set('isLogin', 1);
+                $this->authModel->securityCheck($userData, $location);
                 header("Location:" . $redirect);
             } else {
                 $this->session->set('redirect', $redirect);
