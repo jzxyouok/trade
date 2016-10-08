@@ -39,7 +39,7 @@ class ControllerBase extends Controller
                 $_url = '/';
             }
             $log = empty($_REQUEST) ? $_url : ($_url . '?' . urldecode(http_build_query($_REQUEST)));
-            $logger = new FileLogger(BASE_DIR . $this->config->application->logsDir . date("Ymd") . '.log');
+            $logger = new FileLogger(BASE_DIR . $this->config->application->logsDir . date("Ym") . '.log');
             $logger->log($log, Logger::INFO);
         }
 
