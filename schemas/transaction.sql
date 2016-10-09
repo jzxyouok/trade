@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.9)
 # Database: XXTIME
-# Generation Time: 2016-10-08 08:54:11 +0000
+# Generation Time: 2016-10-09 08:46:48 +0000
 # ************************************************************
 
 
@@ -18,6 +18,22 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+
+# Dump of table apps
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `apps`;
+
+CREATE TABLE `apps` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `app_id` varchar(16) DEFAULT '',
+  `secret_key` varchar(32) DEFAULT '',
+  `notify_url` varchar(255) DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `app_id` (`app_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 
 # Dump of table transaction
@@ -38,7 +54,7 @@ CREATE TABLE `transaction` (
   `product_id` varchar(60) DEFAULT '' COMMENT '产品ID',
   `end_user` varchar(32) DEFAULT '' COMMENT '终端用户标识',
   `ip` varchar(15) DEFAULT '' COMMENT 'IP',
-  `extra` varchar(60) DEFAULT '' COMMENT '拓展字段',
+  `custom` varchar(60) DEFAULT '' COMMENT '自定义内容',
   `uuid` varchar(36) DEFAULT '' COMMENT '唯一设备标识',
   `idfa` varchar(40) DEFAULT '' COMMENT '广告追踪标识',
   `os` varchar(32) DEFAULT '' COMMENT '操作系统',
