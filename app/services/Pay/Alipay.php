@@ -9,28 +9,31 @@ use Xxtime\Util;
 
 class Alipay extends Controller
 {
+    private $transaction;
 
     public function notice()
     {
-        $transaction = $this->request->get('out_trade_no');
+        $this->transaction = $this->request->get('out_trade_no');
         $seq = $this->request->get('trade_no');
         $app_id = $this->request->get('app_id');
         $status = $this->request->get('trade_status');
         $amount = $this->request->get('total_amount');
 
         // 验签
-        $this->verify();
+        if (!$this->verify()) {
+            $this->outputError('Signature Verify Failed');
+        }
 
         // 检查AppID
         if ($app_id != $this->config->pay->alipayAppID) {
-            Util::output(array('code' => 1, 'msg' => 'Invalid AliPay AppID'));
+            $this->outputError('Invalid AliPay AppID');
         }
 
         // 查询订单
         $ordersModel = new Orders();
-        $orderDetail = $ordersModel->findFirst("transaction=$transaction");
+        $orderDetail = $ordersModel->findFirst("transaction={$this->transaction}");
         if (!$orderDetail) {
-            Util::output(array('code' => 1, 'msg' => 'Invalid Order ID'));
+            $this->outputError('Invalid Order ID');
         }
 
 
@@ -66,7 +69,7 @@ class Alipay extends Controller
         }
 
 
-        $orderDetail->status = 'PAID';
+        $orderDetail->status = 'paid';
         $orderDetail->gateway = 'alipay';
         $orderDetail->seq = $seq;
         $orderDetail->amount = $amount;
@@ -89,7 +92,7 @@ class Alipay extends Controller
         $aop = new \AopClient ();
         $aop->gatewayUrl = 'https://openapi.alipay.com/gateway.do';
         $aop->appId = $this->config->pay->alipayAppID;
-        $aop->rsaPrivateKeyFilePath = APP_DIR . '/config/files/alipayPrivateKey.pem';
+        $aop->rsaPrivateKeyFilePath = APP_DIR . '/config/files/AlipayPrivateKey.pem';
         $aop->alipayPublicKey = $this->config->pay->alipayPublicKey;
         $aop->apiVersion = '1.0';
         $aop->postCharset = 'utf-8';
@@ -114,6 +117,27 @@ class Alipay extends Controller
 
     private function verify()
     {
+        $req = $_REQUEST;
+        $signature = base64_decode(str_replace(' ', '+', $req['sign']));
+        unset($req['sign'], $req['sign_type']);
+        ksort($req);
+        $verifyData = '';
+        foreach ($req as $key => $value) {
+            $verifyData .= "$key=$value&";
+        }
+
+        $public_key = "-----BEGIN PUBLIC KEY-----\n" .
+            chunk_split($this->config->pay->alipayPublicKey, 64, "\n") .
+            '-----END PUBLIC KEY-----';
+        $pub_key_id = openssl_get_publickey($public_key);
+        $result = openssl_verify($verifyData, $signature, $pub_key_id, OPENSSL_ALGO_SHA1);
+        if ($result == 1) {
+            return true;
+        } elseif ($result == 0) {
+            return false;
+        } else {
+            return false;
+        }
     }
 
 
@@ -126,6 +150,13 @@ class Alipay extends Controller
     private function failed()
     {
         exit('failed');
+    }
+
+
+    private function outputError($msg = '')
+    {
+        writeLog("TX:{$this->transaction}, {$msg}", 'Error' . date('Ym'));
+        Util::output(array('code' => 1, 'msg' => $msg));
     }
 
 }
