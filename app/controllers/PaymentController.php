@@ -28,6 +28,8 @@ class PaymentController extends ControllerBase
      */
     public function noticeAction()
     {
+        $uri = strpos($_SERVER['REQUEST_URI'], '?') ? substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?')) : $_SERVER['REQUEST_URI'];
+        writeLog($uri . '?' . urldecode(http_build_query($_REQUEST)), 'Notice' . date('Ym'));
         $gateway = trim($this->dispatcher->getParam('param'), '/');
         Services::pay($gateway)->notice();
     }
@@ -86,11 +88,5 @@ class PaymentController extends ControllerBase
 
         // 其他参数
         $this->_order['subject'] = $this->request->get('subject', 'string');
-
-
-        // 检查参数
-        if (!$this->_order['amount']) {
-            Util::output(array('code' => 1, 'msg' => 'Invalid Param [amount]'));
-        }
     }
 }

@@ -53,6 +53,7 @@ class Orders extends Model
 
         $data = array(
             'transaction' => $order_object->transaction,
+            'gateway' => $order_object->gateway,
             'amount' => $order_object->amount,
             'currency' => $order_object->currency,
             'product_id' => $order_object->product_id,
@@ -83,6 +84,19 @@ class Orders extends Model
                 break;
             }
         }
+
+        // 日志
+        DI::getDefault()->get('dbData')->insertAsDict(
+            "noticeLogs",
+            array(
+                "transaction" => $order_object->transaction,
+                "url" => $appConfig['notify_url'],
+                "request" => http_build_query($data),
+                "response" => $response,
+                "create_time" => date('Y-m-d H:i:s')
+            )
+        );
+
         if (strtolower($response) == 'success') {
             return true;
         }
@@ -103,7 +117,8 @@ class Orders extends Model
         $data = $query->fetchAll();
         $data = array_column($data, null, 'app_id');
         if (!isset($data[$app_id])) {
-            // TODO :: logs && 缓存
+            writeLog("APP:{$app_id}, Invalid Config", 'Error' . date('Ym'));
+            // TODO :: 缓存
         }
         return $data[$app_id];
     }

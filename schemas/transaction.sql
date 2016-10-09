@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.9)
 # Database: XXTIME
-# Generation Time: 2016-10-09 08:46:48 +0000
+# Generation Time: 2016-10-09 16:10:40 +0000
 # ************************************************************
 
 
@@ -36,6 +36,24 @@ CREATE TABLE `apps` (
 
 
 
+# Dump of table noticeLogs
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `noticeLogs`;
+
+CREATE TABLE `noticeLogs` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `transaction` varchar(32) DEFAULT '0' COMMENT '订单ID',
+  `url` varchar(255) DEFAULT '' COMMENT '地址',
+  `request` text COMMENT '请求',
+  `response` text COMMENT '响应',
+  `create_time` datetime DEFAULT '0000-01-01 00:00:00' COMMENT '时间',
+  PRIMARY KEY (`id`),
+  KEY `transaction` (`transaction`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='通知错误日志';
+
+
+
 # Dump of table transaction
 # ------------------------------------------------------------
 
@@ -46,8 +64,9 @@ CREATE TABLE `transaction` (
   `transaction` varchar(32) DEFAULT '' COMMENT '订单ID',
   `app_id` varchar(16) DEFAULT '0' COMMENT '应用ID',
   `user_id` varchar(16) DEFAULT '0' COMMENT '用户ID',
-  `amount` decimal(10,2) unsigned DEFAULT '0.00' COMMENT '金额',
   `currency` varchar(3) DEFAULT '' COMMENT '货币类型',
+  `amount` decimal(10,2) unsigned DEFAULT '0.00' COMMENT '金额',
+  `amount_usd` decimal(10,2) unsigned DEFAULT '0.00' COMMENT '美元',
   `status` enum('pending','closed','failed','refund','paid','complete','sandbox') DEFAULT 'pending' COMMENT '支付状态',
   `gateway` varchar(16) DEFAULT NULL COMMENT '支付网关',
   `seq` varchar(32) DEFAULT NULL COMMENT '网关订单号',
