@@ -14,7 +14,7 @@ class Alipay extends Controller
     public function notice()
     {
         $this->transaction = $this->request->get('out_trade_no');
-        $seq = $this->request->get('trade_no');
+        $trade_no = $this->request->get('trade_no');
         $app_id = $this->request->get('app_id');
         $status = $this->request->get('trade_status');
         $amount = $this->request->get('total_amount');
@@ -71,7 +71,7 @@ class Alipay extends Controller
 
         $orderDetail->status = 'paid';
         $orderDetail->gateway = 'alipay';
-        $orderDetail->seq = $seq;
+        $orderDetail->trade_no = $trade_no;
         $orderDetail->amount = $amount;
         $orderDetail->currency = 'CNY';
         $orderDetail->save();
@@ -118,6 +118,9 @@ class Alipay extends Controller
     private function verify()
     {
         $req = $_REQUEST;
+        if (empty($req['sign'])) {
+            $this->outputError('No Param [sign]');
+        }
         $signature = base64_decode(str_replace(' ', '+', $req['sign']));
         unset($req['sign'], $req['sign_type']);
         ksort($req);

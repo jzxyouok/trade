@@ -36,12 +36,12 @@ CREATE TABLE `apps` (
 
 
 
-# Dump of table noticeLogs
+# Dump of table logsNotice
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `noticeLogs`;
+DROP TABLE IF EXISTS `logsNotice`;
 
-CREATE TABLE `noticeLogs` (
+CREATE TABLE `logsNotice` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `transaction` varchar(32) DEFAULT '0' COMMENT '订单ID',
   `url` varchar(255) DEFAULT '' COMMENT '地址',
@@ -69,7 +69,7 @@ CREATE TABLE `transaction` (
   `amount_usd` decimal(10,2) unsigned DEFAULT '0.00' COMMENT '美元',
   `status` enum('pending','closed','failed','refund','paid','complete','sandbox') DEFAULT 'pending' COMMENT '支付状态',
   `gateway` varchar(16) DEFAULT NULL COMMENT '支付网关',
-  `seq` varchar(32) DEFAULT NULL COMMENT '网关订单号',
+  `trade_no` varchar(32) DEFAULT NULL COMMENT '网关订单号',
   `product_id` varchar(60) DEFAULT '' COMMENT '产品ID',
   `end_user` varchar(32) DEFAULT '' COMMENT '终端用户标识',
   `ip` varchar(15) DEFAULT '' COMMENT 'IP',
@@ -82,7 +82,7 @@ CREATE TABLE `transaction` (
   `complete_time` datetime DEFAULT '0000-01-01 00:00:00' COMMENT '完成时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `transaction` (`transaction`),
-  UNIQUE KEY `seq` (`gateway`,`seq`),
+  UNIQUE KEY `trade_no` (`gateway`,`trade_no`),
   KEY `time` (`complete_time`),
   KEY `dim` (`app_id`,`uuid`,`channel`) USING BTREE,
   KEY `user_id` (`app_id`,`user_id`) USING BTREE

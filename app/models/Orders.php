@@ -87,7 +87,7 @@ class Orders extends Model
 
         // 日志
         DI::getDefault()->get('dbData')->insertAsDict(
-            "noticeLogs",
+            "logsNotice",
             array(
                 "transaction" => $order_object->transaction,
                 "url" => $appConfig['notify_url'],
@@ -117,7 +117,8 @@ class Orders extends Model
         $data = $query->fetchAll();
         $data = array_column($data, null, 'app_id');
         if (!isset($data[$app_id])) {
-            writeLog("APP:{$app_id}, Invalid Config", 'Error' . date('Ym'));
+            writeLog("APP:{$app_id}, Invalid App Config", 'Error' . date('Ym'));
+            Utils::outputJSON(array('code' => 1, 'msg' => "APP:{$app_id}, Invalid App Config"));
             // TODO :: 缓存
         }
         return $data[$app_id];
