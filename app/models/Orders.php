@@ -98,6 +98,9 @@ class Orders extends Model
         );
 
         if (strtolower($response) == 'success') {
+            $order_object->status = 'complete';
+            $order_object->complete_time = date('Y-m-d H:i:s');
+            $order_object->save();
             return true;
         }
         return false;
@@ -109,7 +112,7 @@ class Orders extends Model
      * @param int $app_id
      * @return mixed
      */
-    private function getAppConfig($app_id = 0)
+    public function getAppConfig($app_id = 0)
     {
         $sql = "SELECT app_id, secret_key, notify_url FROM `apps` WHERE 1=1";
         $query = DI::getDefault()->get('dbData')->query($sql);
