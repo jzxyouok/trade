@@ -27,7 +27,8 @@ class Alipay extends Controller
         }
 
         // 检查AppID
-        if ($app_id != $this->config->pay->alipayAppID) {
+        $k = 'APP' . $app_id . '_alipayAppID';
+        if ($app_id != $this->config->pay->$k) {
             $this->outputError('Invalid AliPay AppID');
         }
 
@@ -87,15 +88,17 @@ class Alipay extends Controller
 
     public function adapter($order = [])
     {
+        $k_app = 'APP' . $order['app_id'] . '_alipayAppID';
+        $k_key = 'APP' . $order['app_id'] . '_alipayPublicKey';
         if (empty($order['subject'])) {
             Util::output(array('code' => 1, 'msg' => 'Invalid Param [subject]'));
         }
         include BASE_DIR . $this->config->application->pluginsDir . 'alipay/AopSdk.php';
         $aop = new \AopClient ();
         $aop->gatewayUrl = 'https://openapi.alipay.com/gateway.do';
-        $aop->appId = $this->config->pay->alipayAppID;
-        $aop->rsaPrivateKeyFilePath = APP_DIR . '/config/files/AlipayPrivateKey.pem';
-        $aop->alipayPublicKey = $this->config->pay->alipayPublicKey;
+        $aop->appId = $this->config->pay->$k_app;
+        $aop->rsaPrivateKeyFilePath = APP_DIR . "/config/files/{$order['app_id']}AlipayPrivateKey.pem";
+        $aop->alipayPublicKey = $this->config->pay->$k_key;
         $aop->apiVersion = '1.0';
         $aop->postCharset = 'utf-8';
         $aop->format = 'json';
@@ -137,8 +140,10 @@ class Alipay extends Controller
             $verifyData .= "$key=$value&";
         }
 
+        $app_id = $this->request->get('app_id');
+        $k = 'APP' . $app_id . '_alipayPublicKey';
         $public_key = "-----BEGIN PUBLIC KEY-----\n" .
-            chunk_split($this->config->pay->alipayPublicKey, 64, "\n") .
+            chunk_split($this->config->pay->$k, 64, "\n") .
             '-----END PUBLIC KEY-----';
         $pub_key_id = openssl_get_publickey($public_key);
         $result = openssl_verify($verifyData, $signature, $pub_key_id, OPENSSL_ALGO_SHA1);
