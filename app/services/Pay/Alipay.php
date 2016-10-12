@@ -2,14 +2,16 @@
 
 namespace MyApp\Services\Pay;
 
-use Phalcon\DI;
+use MyApp\Models\Utils;
 use MyApp\Models\Orders;
+use Phalcon\DI;
 use Phalcon\Mvc\Controller;
 use Xxtime\Util;
 
 class Alipay extends Controller
 {
     private $transaction;
+
 
     public function notice()
     {
@@ -112,6 +114,12 @@ class Alipay extends Controller
         $request->setBizContent(json_encode($params));
         $result = $aop->pageExecute($request);
         echo $result;
+    }
+
+
+    public function make($order = [])
+    {
+        Utils::outputJSON($order);
     }
 
 

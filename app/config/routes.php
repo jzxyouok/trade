@@ -153,6 +153,16 @@ $router->add(
 );
 
 
+// 业务路由
+$router->add(
+    "/order/make",
+    array(
+        'namespace' => 'MyApp\Controllers',
+        'controller' => 'payment',
+        'action' => 'make'
+    )
+);
+
 $router->add(
     "/notice/:params",
     array(
