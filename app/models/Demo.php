@@ -27,14 +27,14 @@ class Demo extends Model
         $sql = "INSERT INTO `robots`(`name`, `year`) VALUES (?, ?)";
         $sql = "UPDATE `robots` SET `name` = ? WHERE `id` = ?";
         $sql = "DELETE FROM `robots` WHERE `name`=? AND `id` = ?";
-        $success = $this->dbConnectionData->execute($sql, array('JoeChu', 1987));
+        $success = DI::getDefault()->get('dbData')->execute($sql, array('JoeChu', 1987));
 
 
         // 可用以下操作替换上述方法
 
 
         // 插入 方法一
-        $success = $this->dbConnectionData->insert(
+        $success = DI::getDefault()->get('dbData')->insert(
             "robots",
             array("JoeChu", 1987),
             array("name", "year")
@@ -42,7 +42,7 @@ class Demo extends Model
 
 
         // 插入 方法二
-        $success = $this->dbConnectionData->insertAsDict(
+        $success = DI::getDefault()->get('dbData')->insertAsDict(
             "robots",
             array(
                 "name" => "JoeChu",
@@ -52,7 +52,7 @@ class Demo extends Model
 
 
         // 更新 方法一
-        $success = $this->dbConnectionData->update(
+        $success = DI::getDefault()->get('dbData')->update(
             "robots",
             array("name"),
             array("JoeChu"),
@@ -65,7 +65,7 @@ class Demo extends Model
 
 
         // 更新 方法二
-        $success = $this->dbConnectionData->updateAsDict(
+        $success = DI::getDefault()->get('dbData')->updateAsDict(
             "robots",
             array(
                 "name" => "JoeChu"
@@ -79,7 +79,7 @@ class Demo extends Model
 
 
         // 删除
-        $success = $this->dbConnectionData->delete("robots", "id = ?", array(101));
+        $success = DI::getDefault()->get('dbData')->delete("robots", "id = ?", array(101));
     }
 
 
@@ -89,7 +89,7 @@ class Demo extends Model
         // link https://docs.phalconphp.com/zh/latest/reference/db.html#binding-parameters
         $sql = "SELECT * FROM users WHERE username=:username";
         $bind = array('username' => 'demo@xxtime.com');
-        $query = $this->dbConnectionData->query($sql, $bind); //$query->numRows();
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind); //$query->numRows();
         $query->setFetchMode(Db::FETCH_ASSOC);
         $data = $query->fetchAll(); // fetch
         dump($sql, $data);
@@ -102,19 +102,19 @@ class Demo extends Model
 
         try {
             // 开始一个事务
-            $this->dbConnectionData->begin();
+            DI::getDefault()->get('dbData')->begin();
 
             // 执行一些操作
-            $this->dbConnectionData->execute("DELETE `robots` WHERE `id` = 101");
-            $this->dbConnectionData->execute("DELETE `robots` WHERE `id` = 102");
-            $this->dbConnectionData->execute("DELETE `robots` WHERE `id` = 103");
+            DI::getDefault()->get('dbData')->execute("DELETE `robots` WHERE `id` = 101");
+            DI::getDefault()->get('dbData')->execute("DELETE `robots` WHERE `id` = 102");
+            DI::getDefault()->get('dbData')->execute("DELETE `robots` WHERE `id` = 103");
 
             // 提交操作，如果一切正常
-            $this->dbConnectionData->commit();
+            DI::getDefault()->get('dbData')->commit();
 
         } catch (Exception $e) {
             // 如果发现异常，回滚操作
-            $this->dbConnectionData->rollback();
+            DI::getDefault()->get('dbData')->rollback();
         }
 
     }

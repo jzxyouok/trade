@@ -38,6 +38,9 @@ class Utils extends Model
     // 把数组转换为树状结构
     public function list2tree($data = array())
     {
+        if (!$data) {
+            return [];
+        }
         $result = array();
         foreach ($data as $value) {
             $parent[] = $value['parent'];

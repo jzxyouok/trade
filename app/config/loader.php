@@ -26,6 +26,9 @@ include_once BASE_DIR . $config->application->pluginsDir . 'Common.php';
 
 
 // load composer
+if (!file_exists(BASE_DIR . '/vendor/autoload.php')) {
+    die('The project needs Composer, please check vendor directory');
+}
 include_once BASE_DIR . '/vendor/autoload.php';
 if ($config->setting->appDebug == true) {
     include BASE_DIR . $config->application->pluginsDir . 'Exception.php';
