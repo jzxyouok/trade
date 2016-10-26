@@ -94,22 +94,20 @@ class PaymentController extends ControllerBase
 
         // 关键参数
         $this->_order['user_id'] = $user_id;
+        $this->_order['end_user'] = $this->request->get('end_user', 'string');
         $this->_order['amount'] = $this->request->get('amount', 'float');
         $this->_order['currency'] = $this->request->get('currency', 'alphanum');
         $this->_order['product_id'] = $this->request->get('product_id', 'string');
-        $this->_order['end_user'] = $this->request->get('end_user', 'string');
-        $this->_order['ip'] = $this->request->getClientAddress();
+        $this->_order['subject'] = $this->request->get('subject', 'string');
 
         // 统计参数
         $this->_order['uuid'] = $this->request->get('uuid', 'string');
-        $this->_order['idfa'] = $this->request->get('idfa', 'string');
-        $this->_order['os'] = $this->request->get('os', 'string');
+        $this->_order['adid'] = $this->request->get('adid', 'string');
+        $this->_order['device'] = $this->request->get('device', 'string');
         $this->_order['channel'] = $this->request->get('channel', 'string');
-        $this->_order['extra'] = $this->request->get('extra', 'string');
+        $this->_order['custom'] = $this->request->get('custom', 'string');
 
-        // 其他参数
-        $this->_order['subject'] = $this->request->get('subject', 'string');
-
+        $this->_order['ip'] = $this->request->getClientAddress();
 
         // 检查参数
         if (!$this->_order['app_id']) {

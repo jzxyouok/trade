@@ -32,10 +32,10 @@ class Orders extends Model
         $this->product_id = $order['product_id'];
         $this->end_user = $order['end_user'];
         $this->ip = $order['ip'];
-        $this->extra = $order['extra'];
+        $this->custom = $order['custom'];
         $this->uuid = strtoupper($order['uuid']);
-        $this->idfa = strtoupper($order['idfa']);
-        $this->os = $order['os'];
+        $this->adid = strtoupper($order['adid']);
+        $this->device = $order['device'];
         $this->channel = $order['channel'];
         $this->create_time = date('Y-m-d H:i:s');
         $this->save();

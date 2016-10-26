@@ -126,7 +126,7 @@ class Weixin extends Controller
             'nonce_str' => Util::random(32),
             'body' => $body,
             'out_trade_no' => $order['transaction'],
-            'fee_type' => 'CNY',
+            'fee_type' => $order['currency'],
             'total_fee' => intval($order['amount'] * 100),
             'spbill_create_ip' => $order['ip'],
             'time_start' => (new DateTime('now', new DateTimeZone('Asia/Shanghai')))->format('YmdHis'),
@@ -135,7 +135,7 @@ class Weixin extends Controller
             'trade_type' => 'APP',
             //'attach' => '',
             //'detail' => '',
-            //'limit_pay' => ''
+            //'limit_pay' => 'no_credit'
         );
         $data['sign'] = strtoupper(Util::createSign($data, $this->config->pay->$k_key));
         $xml = Array2XML::createXML('xml', $data);
@@ -206,7 +206,7 @@ class Weixin extends Controller
 
     private function outputError($msg = '')
     {
-        writeLog("TX:{$this->transaction}, {$msg}", 'Error' . date('Ym'));
+        writeLog("TX:{$this->transaction}, {$msg}", 'ERROR' . date('Ym'));
         Utils::outputJSON(array('code' => 1, 'msg' => $msg));
     }
 

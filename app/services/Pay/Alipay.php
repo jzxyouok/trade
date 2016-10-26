@@ -171,7 +171,7 @@ class Alipay extends Controller
 
     private function outputError($msg = '')
     {
-        writeLog("TX:{$this->transaction}, {$msg}", 'Error' . date('Ym'));
+        writeLog("TX:{$this->transaction}, {$msg}", 'ERROR' . date('Ym'));
         Util::output(array('code' => 1, 'msg' => $msg));
     }
 
