@@ -57,8 +57,8 @@ class Weixin extends Controller
 
 
         // 验签
-        if (!$this->verify($orderDetail->app_id, $data)) {
-            $this->outputError('Signature Verify Failed');
+        if ($data['sign'] != $this->createSign($orderDetail->app_id, $data)) {
+            $this->outputError("APP:$orderDetail->app_id, Signature Verify Failed");
         }
 
 
@@ -102,15 +102,10 @@ class Weixin extends Controller
     // link: https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=9_1
     public function make($order = [])
     {
-        $orderModel = new Orders();
-
         $this->transaction = $order['transaction'];
         $app_id = $order['app_id'];
         $k_app = "APP{$app_id}_wxAppID";
-        $k_mch = "APP{$app_id}_wxMhu";
-        $k_key = "APP{$app_id}_wxKey";
-
-        $appConfig = $orderModel->getAppConfig($app_id);
+        $k_mchid = "APP{$app_id}_wxMCHID";
 
         // 检查必要参数
         $body = $this->request->get('subject', 'string');
@@ -121,7 +116,7 @@ class Weixin extends Controller
         // 整理参数
         $data = array(
             'appid' => $this->config->pay->$k_app,
-            'mch_id' => $this->config->pay->$k_mch,
+            'mch_id' => $this->config->pay->$k_mchid,
             'device_info' => 'WEB',
             'nonce_str' => Util::random(32),
             'body' => $body,
@@ -131,13 +126,15 @@ class Weixin extends Controller
             'spbill_create_ip' => $order['ip'],
             'time_start' => (new DateTime('now', new DateTimeZone('Asia/Shanghai')))->format('YmdHis'),
             'time_expire' => (new DateTime('1 days', new DateTimeZone('Asia/Shanghai')))->format('YmdHis'),
-            'notify_url' => $appConfig['notify_url'],
+            'notify_url' => $this->config->pay->wx_notify_url,
             'trade_type' => 'APP',
             //'attach' => '',
             //'detail' => '',
             //'limit_pay' => 'no_credit'
         );
-        $data['sign'] = strtoupper(Util::createSign($data, $this->config->pay->$k_key));
+        $data['sign'] = $this->createSign($app_id, $data);
+
+        // 准备数据
         $xml = Array2XML::createXML('xml', $data);
         $xmlData = $xml->saveXML();
 
@@ -161,34 +158,40 @@ class Weixin extends Controller
             , null
             , LIBXML_NOCDATA
         );
+        $resData = (array)$resData;
 
         // 记录失败日志
-        if (($resData->return_code != 'SUCCESS') || ($resData->result_code != 'SUCCESS')) {
+        if (($resData['return_code'] != 'SUCCESS') || ($resData['result_code'] != 'SUCCESS')) {
             $this->outputError("APP:$app_id, " . str_replace("\n", '', $response));
         }
 
-        // TODO :: 验签
+
+        // 验签
+        if ($resData['sign'] != $this->createSign($app_id, $resData)) {
+            $this->outputError("APP:$app_id, Signature Verify Failed");
+        }
+
 
         $output = array(
-            'wx_app_id' => $resData->appid,
-            'wx_mch_id' => $resData->mch_id,
-            'wx_trade_type' => $resData->trade_type,
-            'wx_prepay_id' => $resData->prepay_id,
+            'wx_app_id' => $resData['appid'],
+            'wx_mch_id' => $resData['mch_id'],
+            'wx_trade_type' => $resData['trade_type'],
+            'wx_prepay_id' => $resData['prepay_id'],
         );
         Utils::outputJSON($output);
     }
 
 
-    private function verify($app_id = 0, $data = [])
+    private function createSign($app_id = 0, $data = [])
     {
-        $sign = $data['sign'];
         unset($data['sign']);
-        $k_key = "APP{$app_id}_wxKey";
-        Util::createSign($data, $this->config->pay->$k_key);
-        if ($sign == strtoupper(Util::createSign($data, $this->config->pay->$k_key))) {
-            return true;
+        ksort($data);
+        $string = '';
+        foreach ($data as $key => $value) {
+            $string .= "$key=$value&";
         }
-        return false;
+        $k_mchkey = "APP{$app_id}_wxMCHKEY";
+        return strtoupper(md5($string . 'key=' . $this->config->pay->$k_mchkey));
     }
 
 
