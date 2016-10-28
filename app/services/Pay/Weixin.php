@@ -126,7 +126,7 @@ class Weixin extends Controller
             'spbill_create_ip' => $order['ip'],
             'time_start' => (new DateTime('now', new DateTimeZone('Asia/Shanghai')))->format('YmdHis'),
             'time_expire' => (new DateTime('1 days', new DateTimeZone('Asia/Shanghai')))->format('YmdHis'),
-            'notify_url' => $this->config->pay->wx_notify_url,
+            'notify_url' => $this->config->pay->notify_url_weixin,
             'trade_type' => 'APP',
             //'attach' => '',
             //'detail' => '',
@@ -173,10 +173,14 @@ class Weixin extends Controller
 
 
         $output = array(
-            'wx_app_id' => $resData['appid'],
-            'wx_mch_id' => $resData['mch_id'],
-            'wx_trade_type' => $resData['trade_type'],
-            'wx_prepay_id' => $resData['prepay_id'],
+            'code' => 0,
+            'msg' => 'success',
+            'data' => array(
+                'wx_app_id' => $resData['appid'],
+                'wx_mch_id' => $resData['mch_id'],
+                'wx_trade_type' => $resData['trade_type'],
+                'wx_prepay_id' => $resData['prepay_id'],
+            )
         );
         Utils::outputJSON($output);
     }
