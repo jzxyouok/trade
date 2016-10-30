@@ -15,11 +15,12 @@ class Alipay extends Controller
     private $transaction;
 
 
+    // https://doc.open.alipay.com/docs/doc.htm?treeId=193&articleId=105286&docType=1
     public function notice()
     {
         $this->transaction = $this->request->get('out_trade_no');
         $trade_no = $this->request->get('trade_no');
-        $app_id = $this->request->get('app_id');
+        $ali_app_id = $this->request->get('app_id');
         $status = $this->request->get('trade_status');
         $amount = $this->request->get('total_amount');
 
@@ -28,17 +29,19 @@ class Alipay extends Controller
             $this->outputError('Signature Verify Failed');
         }
 
-        // 检查AppID
-        $k = 'APP' . $app_id . '_alipayAppID';
-        if ($app_id != $this->config->pay->$k) {
-            $this->outputError('Invalid AliPay AppID');
-        }
 
         // 查询订单
         $ordersModel = new Orders();
         $orderDetail = $ordersModel->findFirst("transaction={$this->transaction}");
         if (!$orderDetail) {
             $this->outputError('Invalid Order ID');
+        }
+
+
+        // 检查AppID
+        $k = 'APP' . $orderDetail->app_id . '_alipayAppID';
+        if ($ali_app_id != $this->config->pay->$k) {
+            $this->outputError('Invalid AliPay AppID');
         }
 
 

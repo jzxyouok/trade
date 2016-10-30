@@ -27,15 +27,8 @@ class Weixin extends Controller
         );
         $data = (array)$data;
 
-
         // 检查
-        if (empty($data['return_code']) || empty($data['result_code'])) {
-            $this->outputError('Notice Data Error');
-        }
-        if ($data['return_code'] != 'SUCCESS') {
-            $this->outputError(str_replace(["\n", ' '], '', $dataXML));
-        }
-        if ($data['result_code'] != 'SUCCESS') {
+        if (($data['return_code'] != 'SUCCESS') || ($data['result_code'] != 'SUCCESS')) {
             $this->outputError(str_replace(["\n", ' '], '', $dataXML));
         }
 
@@ -139,19 +132,27 @@ class Weixin extends Controller
         $xmlData = $xml->saveXML();
 
         // 请求
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://api.mch.weixin.qq.com/pay/unifiedorder');
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'XXTIME.COM');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['POWER:XXTIME.COM']);
-        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $xmlData);
-        $response = curl_exec($ch);
-        curl_close($ch);
+        for ($i = 0; $i < 2; $i++) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://api.mch.weixin.qq.com/pay/unifiedorder');
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'XXTIME.COM');
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['POWER:XXTIME.COM']);
+            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $xmlData);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            if ($response !== false) {
+                break;
+            }
+        }
+        if (!$response) {
+            $this->outputError("APP:$app_id, Response Error");
+        }
 
         $resData = simplexml_load_string(
             $response
