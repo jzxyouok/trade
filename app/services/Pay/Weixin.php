@@ -78,6 +78,7 @@ class Weixin extends Controller
         $orderDetail->trade_no = $trade_no;
         $orderDetail->amount = $amount;
         $orderDetail->currency = $currency;
+        $orderDetail->amount_usd = $ordersModel->changeToUSD($amount, $orderDetail->currency);
         $orderDetail->save();
 
         if ($ordersModel->noticeTo($orderDetail)) {

@@ -23,6 +23,20 @@ class Orders extends Model
      */
     public function makeOrder($order = [])
     {
+        // 检查产品 TODO:: 卡类支付暂不适用
+        $sql = "SELECT price, currency FROM `products` WHERE app_id=:app_id AND product_id=:product_id AND gateway=:gateway";
+        $bind = array('app_id' => $order['app_id'], 'product_id' => $order['product_id'], 'gateway' => $order['gateway']);
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        $data = $query->fetch();
+        if (!$data || ($data['price'] != $order['amount'])) {
+            $msg = "Invalid Product Config: {$order['product_id']}";
+            writeLog("APP:{$order['app_id']}, {$msg}", 'ERROR' . date('Ym'));
+            Utils::outputJSON(array('code' => 1, 'msg' => $msg));
+        }
+
+
+        // 下单
         $this->transaction = $order['transaction'];
         $this->app_id = $order['app_id'];
         $this->user_id = $order['user_id'];
@@ -125,6 +139,22 @@ class Orders extends Model
             // TODO :: 缓存
         }
         return $data[$app_id];
+    }
+
+
+    public function changeToUSD($amount = 0, $currency = '')
+    {
+        if ($currency == 'USD') {
+            return $amount;
+        }
+
+        global $config;
+        $k = $currency . 'USD';
+        if (!isset($config->exchange->$k)) {
+            writeLog("No Exchange Config: {$currency}", 'ERROR' . date('Ym'));
+            return 0;
+        }
+        return $amount * $config->exchange->$k;
     }
 
 }
