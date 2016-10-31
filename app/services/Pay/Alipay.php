@@ -13,6 +13,7 @@ use DateTimeZone;
 class Alipay extends Controller
 {
     private $transaction;
+    private $_app_id;
 
 
     // https://doc.open.alipay.com/docs/doc.htm?treeId=193&articleId=105286&docType=1
@@ -24,11 +25,6 @@ class Alipay extends Controller
         $status = $this->request->get('trade_status');
         $amount = $this->request->get('total_amount');
 
-        // 验签
-        if (!$this->verify()) {
-            $this->outputError('Signature Verify Failed');
-        }
-
 
         // 查询订单
         $ordersModel = new Orders();
@@ -36,12 +32,19 @@ class Alipay extends Controller
         if (!$orderDetail) {
             $this->outputError('Invalid Order ID');
         }
+        $this->_app_id = $orderDetail->app_id;
 
 
         // 检查AppID
         $k = 'APP' . $orderDetail->app_id . '_alipayAppID';
         if ($ali_app_id != $this->config->pay->$k) {
             $this->outputError('Invalid AliPay AppID');
+        }
+
+
+        // 验签
+        if (!$this->verify($orderDetail->app_id)) {
+            $this->outputError('Signature Verify Failed');
         }
 
 
@@ -72,7 +75,12 @@ class Alipay extends Controller
                 $orderDetail->save();
                 $this->finished();
                 break;
+            case 'WAIT_BUYER_PAY':
+                $this->finished();
             default:
+                if ($this->query() == true) { // 主动查询
+                    break;
+                }
                 $this->finished();
         }
 
@@ -97,7 +105,6 @@ class Alipay extends Controller
     public function adapter($order = [])
     {
         $k_app = 'APP' . $order['app_id'] . '_alipayAppID';
-        $k_key = 'APP' . $order['app_id'] . '_alipayPublicKey';
         if (empty($order['subject'])) {
             Util::output(array('code' => 1, 'msg' => 'Invalid Param [subject]'));
         }
@@ -105,7 +112,6 @@ class Alipay extends Controller
         $aop = new \AopClient ();
         $aop->appId = $this->config->pay->$k_app;
         $aop->rsaPrivateKeyFilePath = APP_DIR . "/config/files/{$order['app_id']}AlipayPrivateKey.pem";
-        $aop->alipayPublicKey = $this->config->pay->$k_key;
 
         $request = new \AlipayTradeWapPayRequest ();
         $request->setNotifyUrl($this->config->pay->notify_url_alipay);
@@ -167,7 +173,7 @@ class Alipay extends Controller
     }
 
 
-    private function verify()
+    private function verify($app_id = 0)
     {
         $req = $_REQUEST;
         if (empty($req['sign'])) {
@@ -180,12 +186,8 @@ class Alipay extends Controller
         foreach ($req as $key => $value) {
             $verifyData .= "$key=$value&";
         }
-
-        $app_id = $this->request->get('app_id');
-        $k = 'APP' . $app_id . '_alipayPublicKey';
-        $public_key = "-----BEGIN PUBLIC KEY-----\n" .
-            chunk_split($this->config->pay->$k, 64, "\n") .
-            '-----END PUBLIC KEY-----';
+        $verifyData = substr($verifyData, 0, -1);
+        $public_key = file_get_contents(APP_DIR . "/config/files/{$app_id}AlipayPublicKey.pem");
         $pub_key_id = openssl_get_publickey($public_key);
         $result = openssl_verify($verifyData, $signature, $pub_key_id, OPENSSL_ALGO_SHA1);
         if ($result == 1) {
@@ -195,6 +197,34 @@ class Alipay extends Controller
         } else {
             return false;
         }
+    }
+
+
+    // https://doc.open.alipay.com/doc2/apiDetail.htm?apiId=757&docType=4
+    private function query()
+    {
+        $params = array(
+            'trade_no' => $this->request->get('trade_no'),
+            'out_trade_no' => $this->request->get('out_trade_no')
+
+        );
+        $k_app = 'APP' . $this->_app_id . '_alipayAppID';
+        include BASE_DIR . $this->config->application->pluginsDir . 'alipay/AopSdk.php';
+        $aop = new \AopClient ();
+        $aop->appId = $this->config->pay->$k_app;
+        $aop->rsaPrivateKeyFilePath = APP_DIR . "/config/files/{$this->_app_id}AlipayPrivateKey.pem";
+        $aop->alipayPublicKey = APP_DIR . "/config/files/{$this->_app_id}AlipayPublicKey.pem";
+        $request = new \AlipayTradeQueryRequest ();
+        $request->setBizContent(json_encode($params, JSON_UNESCAPED_UNICODE));
+        $result = $aop->execute($request);
+        $result = (array)$result->alipay_trade_query_response;
+        if ($result['code'] != 10000) {
+            return false;
+        }
+        if (($result['trade_status'] == 'TRADE_FINISHED') || ($result['trade_status'] == 'TRADE_FINISHED')) {
+            return true;
+        }
+        return false;
     }
 
 
