@@ -28,7 +28,10 @@ class Alipay extends Controller
 
         // 查询订单
         $ordersModel = new Orders();
-        $orderDetail = $ordersModel->findFirst("transaction={$this->transaction}");
+        $orderDetail = $ordersModel->findFirst(array(
+                "conditions" => "transaction = :tx:",
+                "bind" => array("tx" => $this->transaction))
+        );
         if (!$orderDetail) {
             $this->outputError('Invalid Order ID');
         }
