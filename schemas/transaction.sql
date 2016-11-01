@@ -6,8 +6,8 @@
 # https://github.com/sequelpro/sequelpro
 #
 # Host: 127.0.0.1 (MySQL 5.7.9)
-# Database: XXTIME
-# Generation Time: 2016-10-09 16:10:40 +0000
+# Database: dataDefault
+# Generation Time: 2016-11-01 10:07:37 +0000
 # ************************************************************
 
 
@@ -27,12 +27,13 @@ DROP TABLE IF EXISTS `apps`;
 
 CREATE TABLE `apps` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) DEFAULT '',
   `app_id` varchar(16) DEFAULT '',
   `secret_key` varchar(32) DEFAULT '',
   `notify_url` varchar(255) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `app_id` (`app_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='应用';
 
 
 
@@ -50,7 +51,34 @@ CREATE TABLE `logsNotice` (
   `create_time` datetime DEFAULT '0000-01-01 00:00:00' COMMENT '时间',
   PRIMARY KEY (`id`),
   KEY `transaction` (`transaction`) USING BTREE
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='通知错误日志';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='通知日志';
+
+
+
+# Dump of table products
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `products`;
+
+CREATE TABLE `products` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `app_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `package` varchar(32) DEFAULT '',
+  `name` varchar(64) DEFAULT '',
+  `product_id` varchar(64) DEFAULT '',
+  `gateway` varchar(32) DEFAULT '',
+  `price` decimal(10,2) unsigned DEFAULT '0.00',
+  `currency` varchar(8) DEFAULT '',
+  `money` int(10) unsigned DEFAULT '0',
+  `status` tinyint(3) unsigned DEFAULT '1',
+  `sort` int(10) unsigned DEFAULT '0',
+  `remark` varchar(255) DEFAULT '',
+  `create_time` datetime DEFAULT '0000-01-01 00:00:00',
+  `update_time` datetime DEFAULT '0000-01-01 00:00:00',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `product_id` (`product_id`),
+  KEY `sort` (`app_id`,`gateway`,`sort`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 
@@ -76,7 +104,7 @@ CREATE TABLE `transaction` (
   `custom` varchar(60) DEFAULT '' COMMENT '自定义内容',
   `uuid` varchar(36) DEFAULT '' COMMENT '唯一设备标识',
   `adid` varchar(40) DEFAULT '' COMMENT '广告追踪标识',
-  `device` varchar(32) DEFAULT '' COMMENT '设备名称',
+  `device` varchar(32) DEFAULT '' COMMENT '操作系统',
   `channel` varchar(32) DEFAULT '' COMMENT '渠道',
   `create_time` datetime DEFAULT '0000-01-01 00:00:00' COMMENT '创建时间',
   `complete_time` datetime DEFAULT '0000-01-01 00:00:00' COMMENT '完成时间',

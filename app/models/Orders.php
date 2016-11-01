@@ -24,8 +24,8 @@ class Orders extends Model
     public function makeOrder($order = [])
     {
         // 检查产品 TODO:: 卡类支付暂不适用
-        $sql = "SELECT price, currency FROM `products` WHERE app_id=:app_id AND product_id=:product_id AND gateway=:gateway";
-        $bind = array('app_id' => $order['app_id'], 'product_id' => $order['product_id'], 'gateway' => $order['gateway']);
+        $sql = "SELECT id, price, currency FROM `products` WHERE status=1 AND app_id=:app_id AND product_id=:product_id";
+        $bind = array('app_id' => $order['app_id'], 'product_id' => $order['product_id']);
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
         $data = $query->fetch();
