@@ -91,8 +91,79 @@ class Weixin extends Controller
     }
 
 
+    // TODO :: 未完成, 商户没有H5支付权限
     public function adapter($order = [])
     {
+        $this->transaction = $order['transaction'];
+        $app_id = $order['app_id'];
+        $k_app = "APP{$app_id}_wxAppID";
+        $k_mchid = "APP{$app_id}_wxMCHID";
+
+        // 检查必要参数
+        $body = $this->request->get('subject', 'string');
+        if (!$body) {
+            $this->outputError('Invalid Param [subject]');
+        }
+
+        // 整理参数
+        $data = array(
+            'appid' => $this->config->pay->$k_app,
+            'mch_id' => $this->config->pay->$k_mchid,
+            'device_info' => 'WEB',
+            'nonce_str' => Util::random(32),
+            'body' => $body,
+            'out_trade_no' => $order['transaction'],
+            'fee_type' => $order['currency'],
+            'total_fee' => intval($order['amount'] * 100),
+            'spbill_create_ip' => $order['ip'],
+            'time_start' => (new DateTime('now', new DateTimeZone('Asia/Shanghai')))->format('YmdHis'),
+            'time_expire' => (new DateTime('1 days', new DateTimeZone('Asia/Shanghai')))->format('YmdHis'),
+            'notify_url' => $this->config->pay->notify_url_weixin,
+            'trade_type' => 'MWEB',
+            //'attach' => '',
+            //'detail' => '',
+            //'limit_pay' => 'no_credit'
+        );
+        $data['sign'] = $this->createSign($app_id, $data);
+
+        // 准备数据
+        $xml = Array2XML::createXML('xml', $data);
+        $xmlData = $xml->saveXML();
+
+        // 请求
+        for ($i = 0; $i < 2; $i++) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://api.mch.weixin.qq.com/pay/unifiedorder');
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'XXTIME.COM');
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['POWER:XXTIME.COM']);
+            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $xmlData);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            if ($response !== false) {
+                break;
+            }
+        }
+        if (!$response) {
+            $this->outputError("APP:$app_id, Response Error");
+        }
+
+        $resData = simplexml_load_string(
+            $response
+            , null
+            , LIBXML_NOCDATA
+        );
+        $resData = (array)$resData;
+
+        // 记录失败日志
+        if (($resData['return_code'] != 'SUCCESS') || ($resData['result_code'] != 'SUCCESS')) {
+            $this->outputError("APP:$app_id, " . str_replace("\n", '', $response));
+        }
     }
 
 

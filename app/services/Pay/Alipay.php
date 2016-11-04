@@ -44,6 +44,11 @@ class Alipay extends Controller
             $this->outputError('Invalid AliPay AppID');
         }
 
+        // 检查金额
+        if ($amount != $orderDetail->amount) {
+            $this->outputError('Check Amount Error');
+        }
+
 
         // 验签
         if (!$this->verify($orderDetail->app_id)) {
