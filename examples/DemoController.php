@@ -1,7 +1,7 @@
 <?php
 
-
 namespace MyApp\Controllers;
+
 
 use Phalcon\Mvc\Controller;
 use Phalcon\Mvc\Dispatcher;
@@ -10,7 +10,6 @@ use MyApp\Services\Services;
 use Phalcon\Filter;
 use Endroid\QrCode\QrCode;
 use PHPGangsta_GoogleAuthenticator;
-
 
 class DemoController extends Controller
 {
@@ -59,12 +58,12 @@ class DemoController extends Controller
         $robots = $this->demoModel->find(
             array(
                 "conditions" => "id >= :id:",
-                "columns" => "id, username,password",
-                "order" => "username DESC",
-                "offset" => 0,
-                "limit" => 10,
-                "group" => "id, username",
-                "bind" => array("id" => 1),
+                "columns"    => "id, username,password",
+                "order"      => "username DESC",
+                "offset"     => 0,
+                "limit"      => 10,
+                "group"      => "id, username",
+                "bind"       => array("id" => 1),
                 //"cache" => array("lifetime" => 3600, "key" => "my-find-key") // 缓存结果集
             )
         );

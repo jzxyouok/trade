@@ -2,6 +2,7 @@
 
 namespace MyApp\Models;
 
+
 use Phalcon\Mvc\Model;
 use Phalcon\DI;
 use Phalcon\Db;
@@ -58,8 +59,8 @@ class Demo extends Model
             array("JoeChu"),
             array(
                 'conditions' => 'id = ?',
-                'bind' => array(101),
-                'bindTypes' => array(PDO::PARAM_INT) // Optional parameter
+                'bind'       => array(101),
+                'bindTypes'  => array(PDO::PARAM_INT) // Optional parameter
             )
         );
 
@@ -72,8 +73,8 @@ class Demo extends Model
             ),
             array(
                 'conditions' => 'id = ?',
-                'bind' => array(101),
-                'bindTypes' => array(PDO::PARAM_INT) // Optional parameter
+                'bind'       => array(101),
+                'bindTypes'  => array(PDO::PARAM_INT) // Optional parameter
             )
         );
 
