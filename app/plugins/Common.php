@@ -23,7 +23,7 @@ if (!function_exists('debug')) {
     }
 }
 
-if (!function_exists('debug')) {
+if (!function_exists('writeLog')) {
     function writeLog($log = '', $file = 'logs.txt')
     {
         global $config;

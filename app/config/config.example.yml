@@ -1,0 +1,63 @@
+setting:
+    sandbox         : false
+    securityPlugin  : 0
+    recordRequest   : false
+    recordSql       : false
+    timezone        : UTC
+    cacheTime       : 600
+    cryptKey        : xxxxxxxxxxxxxxxx
+
+db_data:
+    adapter     : Mysql
+    host        : localhost
+    username    : root
+    password    : 123456
+    dbname      : test
+    charset     : utf8
+    port        : 3306
+
+db_backend:
+    adapter     : Mysql
+    host        : localhost
+    username    : root
+    password    : 123456
+    dbname      : test
+    charset     : utf8
+    port        : 3306
+
+db_log:
+    adapter     : Mysql
+    host        : localhost
+    username    : root
+    password    : 123456
+    dbname      : test
+    charset     : utf8
+    port        : 3306
+
+redis:
+    host        : 127.0.0.1
+    port        : 6379
+    index       : 1
+    prefix      : cache_
+
+sms:
+    appID       :
+    appKey      :
+    signName    :
+    tempCode    :
+    tempSafety  :
+
+sso:
+    BaseURL         : http://www.example.com/api/sso/
+    APPID           : 100
+
+application:
+    controllersDir  : /app/controllers/
+    modelsDir       : /app/models/
+    servicesDir     : /app/services/
+    viewsDir        : /app/views/
+    pluginsDir      : /app/plugins/
+    librariesDir    : /app/libraries/
+    cacheDir        : /app/cache/
+    logsDir         : /app/logs/
+    baseUri         : /api/
