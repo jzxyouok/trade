@@ -2,6 +2,7 @@
 
 namespace MyApp\Plugins;
 
+
 use Phalcon\Mvc\User\Plugin;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Acl;
@@ -26,11 +27,11 @@ class SecurityPlugin extends Plugin
     public function beforeException(Event $event, Dispatcher $dispatcher)
     {
         global $config;
-        if (!$config->setting->appDebug) {
+        if (!$config->setting->sandbox) {
             $dispatcher->forward([
-                'namespace' => 'MyApp\Controllers',
+                'namespace'  => 'MyApp\Controllers',
                 'controller' => 'public',
-                'action' => 'show404'
+                'action'     => 'show404'
             ]);
             return false;
         }
@@ -67,21 +68,21 @@ class SecurityPlugin extends Plugin
 
         // 资源
         $publicResources = array(
-            'index' => array('index'),
-            'about' => array('index'),
+            'index'   => array('index'),
+            'about'   => array('index'),
             'contact' => array('index'),
-            'public' => array('login', 'logout')
+            'public'  => array('login', 'logout')
         );
 
 
         // 资源
-        if ($this->config->setting->RBAC) {
+        if ($this->config->setting->securityPlugin == 1) {
             // 使用自己的权限控制
             $authModel = new Auth();
             $privateResources = $authModel->getAclResource($user_id, $app);
             $allResources = $authModel->getAclResource(10000, $app);
         } else {
-            // 使用BOSS中心的权限控制
+            // 使用资源中心的权限控制
             $resources = $this->session->get('resources');
             if (!$resources) {
                 header('Location:/login');
@@ -167,9 +168,9 @@ class SecurityPlugin extends Plugin
         // 无权限
         if ($acl->isResource($controller) != $acl->isAllowed($role, $controller, $action)) {
             $dispatcher->forward([
-                'namespace' => 'MyApp\Controllers',
+                'namespace'  => 'MyApp\Controllers',
                 'controller' => 'public',
-                'action' => 'show401'
+                'action'     => 'show401'
             ]);
             return false;
         }

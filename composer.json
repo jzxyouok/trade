@@ -1,6 +1,7 @@
 {
   "require": {
     "filp/whoops": "dev-master",
-    "xxtime/component": "dev-master"
+    "xxtime/component": "dev-master",
+    "symfony/yaml": "~3"
   }
 }

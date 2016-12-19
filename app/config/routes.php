@@ -5,7 +5,7 @@
  * Date:    2015-07-20
  * Time:    下午10:32
  * Link:    http://www.xxtime.com
- * link: http://docs.phalconphp.com/zh/latest/reference/routing.html
+ * link:    http://docs.phalconphp.com/zh/latest/reference/routing.html
  */
 use Phalcon\Mvc\Router;
 
@@ -18,17 +18,17 @@ $router->removeExtraSlashes(true);
 $router->add(
     '/:controller/:action/:params',
     array(
-        'namespace' => 'MyApp\Controllers',
+        'namespace'  => 'MyApp\Controllers',
         'controller' => 1,
-        'action' => 2,
-        'params' => 3
+        'action'     => 2,
+        'params'     => 3
     )
 );
 
 $router->add(
     '/:controller',
     array(
-        'namespace' => 'MyApp\Controllers',
+        'namespace'  => 'MyApp\Controllers',
         'controller' => 1
     )
 );
@@ -38,18 +38,18 @@ $router->add(
 $router->add(
     "/([0-9]+)/:controller/:action/:params",
     array(
-        'namespace' => 'MyApp\Controllers',
-        'app' => 1,
+        'namespace'  => 'MyApp\Controllers',
+        'app'        => 1,
         'controller' => 2,
-        'action' => 3,
-        'params' => 4
+        'action'     => 3,
+        'params'     => 4
     )
 );
 $router->add(
     "/([0-9]+)/:controller",
     array(
-        'namespace' => 'MyApp\Controllers',
-        'app' => 1,
+        'namespace'  => 'MyApp\Controllers',
+        'app'        => 1,
         'controller' => 2
     )
 );
@@ -59,17 +59,17 @@ $router->add(
 $router->add(
     '/api/:controller/:action/:params',
     array(
-        'namespace' => 'MyApp\Controllers\Api',
+        'namespace'  => 'MyApp\Controllers\Api',
         'controller' => 1,
-        'action' => 2,
-        'params' => 3
+        'action'     => 2,
+        'params'     => 3
     )
 );
 
 $router->add(
     '/api/:controller',
     array(
-        'namespace' => 'MyApp\Controllers\Api',
+        'namespace'  => 'MyApp\Controllers\Api',
         'controller' => 1
     )
 );
@@ -77,7 +77,7 @@ $router->add(
 $router->add(
     '/api',
     array(
-        'namespace' => 'MyApp\Controllers\Api',
+        'namespace'  => 'MyApp\Controllers\Api',
         'controller' => 'Index'
     )
 );
@@ -87,17 +87,17 @@ $router->add(
 $router->add(
     '/admin/:controller/:action/:params',
     array(
-        'namespace' => 'MyApp\Controllers\Admin',
+        'namespace'  => 'MyApp\Controllers\Admin',
         'controller' => 1,
-        'action' => 2,
-        'params' => 3
+        'action'     => 2,
+        'params'     => 3
     )
 );
 
 $router->add(
     '/admin/:controller',
     array(
-        'namespace' => 'MyApp\Controllers\Admin',
+        'namespace'  => 'MyApp\Controllers\Admin',
         'controller' => 1
     )
 );
@@ -105,7 +105,7 @@ $router->add(
 $router->add(
     '/admin',
     array(
-        'namespace' => 'MyApp\Controllers\Admin',
+        'namespace'  => 'MyApp\Controllers\Admin',
         'controller' => 'Index'
     )
 );
@@ -116,7 +116,7 @@ $router->add(
     "/login",
     array(
         'controller' => 'public',
-        'action' => 'login'
+        'action'     => 'login'
     )
 );
 
@@ -124,7 +124,7 @@ $router->add(
     "/logout",
     array(
         'controller' => 'public',
-        'action' => 'logout'
+        'action'     => 'logout'
     )
 );
 
@@ -133,10 +133,10 @@ $router->add(
 $router->add(
     "/article/([0-9]+)(|\.(html|htm))",
     array(
-        'namespace' => 'MyApp\Controllers',
+        'namespace'  => 'MyApp\Controllers',
         'controller' => 'article',
-        'action' => 'view',
-        'id' => 1
+        'action'     => 'view',
+        'id'         => 1
     )
 );
 
@@ -145,10 +145,10 @@ $router->add(
 $router->add(
     "/tag/:params",
     array(
-        'namespace' => 'MyApp\Controllers',
+        'namespace'  => 'MyApp\Controllers',
         'controller' => 'tag',
-        'action' => 'view',
-        'param' => 1
+        'action'     => 'view',
+        'param'      => 1
     )
 );
 
