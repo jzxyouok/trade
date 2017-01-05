@@ -9,9 +9,9 @@ define('APP_DIR', BASE_DIR . '/app');
 
 use Phalcon\Mvc\Application;
 
-include APP_DIR . "/config/loader.php";
+include APP_DIR . "/bootstrap/loader.php";
 
-include APP_DIR . "/config/services.php";
+include APP_DIR . "/bootstrap/services.php";
 
 $application = new Application($di);
 

@@ -15,20 +15,21 @@ class PublicController extends Controller
     }
 
 
+    // 管理后台的登录处理
     public function loginAction()
     {
-        // 管理后台的登录处理
         $ticket = $this->request->get('ticket', 'string');
         if (!$ticket) {
+            // TODO :: https 协议
             $callback = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            $LoginURL = $this->config->sso->BaseURL . '?redirect=' . urlencode($callback);
-            header('Location:' . $LoginURL);
+            $LoginUrl = $this->config->sso->BaseUrl . '?redirect=' . urlencode($callback);
+            header('Location:' . $LoginUrl);
             exit();
         }
 
         // 验证ticket
-        $verifyURL = $this->config->sso->BaseURL . '/verify?ticket=' . $ticket;
-        $result = file_get_contents($verifyURL);
+        $verifyUrl = $this->config->sso->BaseUrl . '/verify?ticket=' . $ticket;
+        $result = file_get_contents($verifyUrl);
         $result = json_decode($result, true);
 
         if ($result['code'] != 0) {
@@ -37,8 +38,8 @@ class PublicController extends Controller
 
 
         // TODO::拿Ticket换取资源 增加APPKEY
-        $resourceURL = $this->config->sso->BaseURL . '/resources?app=' . $this->config->sso->APPID . '&ticket=' . $ticket;
-        $resources = json_decode(file_get_contents($resourceURL), true);
+        $resourceUrl = $this->config->sso->BaseUrl . '/resources?app=' . $this->config->sso->appId . '&ticket=' . $ticket;
+        $resources = json_decode(file_get_contents($resourceUrl), true);
         if ($resources['code'] != 0) {
             Utils::tips('warning', 'Error When Get Resources');
         } else {

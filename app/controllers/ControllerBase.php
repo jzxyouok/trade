@@ -23,14 +23,20 @@ class ControllerBase extends Controller
 
     public function initialize()
     {
+
+        // set appId
         $this->_app = $this->dispatcher->getParam("app");
 
 
-        // 设置时区
+        // set userId
+        $this->_user_id = $this->session->get('user_id');
+
+
+        // set timezone
         ini_set("date.timezone", $this->config->setting->timezone);
 
 
-        // 日志记录
+        // record request
         if ($this->config->setting->recordRequest) {
             if (isset($_REQUEST['_url'])) {
                 $_url = $_REQUEST['_url'];
@@ -41,6 +47,15 @@ class ControllerBase extends Controller
             $log = empty($_REQUEST) ? $_url : ($_url . '?' . urldecode(http_build_query($_REQUEST)));
             $logger = new FileLogger(BASE_DIR . $this->config->application->logsDir . date("Ym") . '.log');
             $logger->log($log, Logger::INFO);
+        }
+
+
+        // check auth
+        if ($this->config->setting->securityPlugin) {
+            if (!$this->_user_id || !$this->session->get('isLogin')) {
+                header('Location:/login');
+                exit;
+            }
         }
 
     }

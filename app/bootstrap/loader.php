@@ -15,7 +15,7 @@ include_once BASE_DIR . '/vendor/autoload.php';
 
 
 // load config file
-$configFile = APP_DIR . "/config/config";
+$configFile = APP_DIR . "/config/system";
 if (file_exists($configFile . '.yml')) {
     $config = new Config(Yaml::parse(file_get_contents($configFile . '.yml')));
 } else {

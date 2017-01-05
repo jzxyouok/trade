@@ -8,7 +8,7 @@
 
 
 ## 使用方法
-###### 首次安装调试时,需要将配置目录下config.example.ini 修改为config.ini
+###### 首次安装调试时,需要将配置目录下.system.ini 修改为system.ini
 
 * securityPlugin = 0 不启权限控制
 * securityPlugin = 1 使用此系统自带的RBAC权限控制
@@ -24,6 +24,8 @@
 * [xxtime/paytime](https://packagist.org/packages/xxtime/paytime) 支付PayTime
 * [omnipay/omnipay](https://packagist.org/packages/omnipay/omnipay) 支付Omnipay
 * [geoip2/geoip2](https://packagist.org/packages/geoip2/geoip2) 地理位置分析
+* [bshaffer/oauth2-server-php](https://packagist.org/packages/bshaffer/oauth2-server-php) Auth2.0 Server
+* [league/oauth2-client](https://github.com/thephpleague/oauth2-client) Auth2.0 Client
 * [alidayu](http://www.alidayu.com/) 短信功能
 
 

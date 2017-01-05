@@ -26,8 +26,7 @@ class SecurityPlugin extends Plugin
 
     public function beforeException(Event $event, Dispatcher $dispatcher)
     {
-        global $config;
-        if (!$config->setting->sandbox) {
+        if (!$this->config->setting->sandbox) {
             $dispatcher->forward([
                 'namespace'  => 'MyApp\Controllers',
                 'controller' => 'public',

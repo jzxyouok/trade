@@ -76,7 +76,7 @@ class Auth extends Model
     public function logsLogin($data = [])
     {
         $data['create_time'] = date('Y-m-d H:i:s');
-        DI::getDefault()->get('dbBackend')->insertAsDict("logsLogin", $data);
+        DI::getDefault()->get('dbBackend')->insertAsDict("logs_login", $data);
     }
 
 
@@ -102,7 +102,7 @@ class Auth extends Model
     public function checkLoginTimes($ip = '')
     {
         $dateTime = date('Y-m-d H:i:s', time() - 600);
-        $sql = "SELECT COUNT(1) count FROM `logsLogin` WHERE ip=:ip AND result=0 AND create_time>'$dateTime'";
+        $sql = "SELECT COUNT(1) count FROM `logs_login` WHERE ip=:ip AND result=0 AND create_time>'$dateTime'";
         $bind = array('ip' => $ip);
         $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
@@ -137,7 +137,7 @@ class Auth extends Model
 
         $dateTime = date('Y-m-d H:i:s', time() - 86400 * 90);
         $sql = "SELECT t.location, COUNT(1) times
-              FROM(SELECT location FROM `logsLogin` WHERE user_id=:user_id AND location IS NOT null AND result=1 AND create_time>'$dateTime' ORDER BY id DESC LIMIT 300) t
+              FROM(SELECT location FROM `logs_login` WHERE user_id=:user_id AND location IS NOT null AND result=1 AND create_time>'$dateTime' ORDER BY id DESC LIMIT 300) t
               GROUP BY t.location
               ORDER BY times DESC";
         $bind = array('user_id' => $userData['id']);
@@ -203,7 +203,7 @@ class Auth extends Model
      */
     public function getRoleID($user_id = 0)
     {
-        $sql = "SELECT `role_id` FROM `userRole` WHERE user_id=:user_id";
+        $sql = "SELECT `role_id` FROM `user_role` WHERE user_id=:user_id";
         $bind = array('user_id' => $user_id);
         $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
@@ -242,7 +242,7 @@ class Auth extends Model
         }
         $role_id = '"' . implode('","', $role_id) . '"';
         $sql = "SELECT res.id, res.name, res.resource, res.type, res.parent, res.icon
-                FROM `resources` res, `roleResource` rel
+                FROM `resources` res, `role_resource` rel
                 WHERE rel.resource_id=res.id AND res.status=1 AND rel.role_id IN ($role_id) AND res.app=:app
                 ORDER BY res.sort DESC";
         $bind = array('app' => $app);
