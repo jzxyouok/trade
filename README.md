@@ -18,7 +18,7 @@
 
 
 ## 可能用到的组件
-[firebase/php-jwt](https://packagist.org/packages/firebase/php-jwt) JWT(JSON Web Tokens)  
+[firebase/php-jwt](https://packagist.org/packages/firebase/php-jwt) JWT(JSON Web Tokens) [more](https://jwt.io/)  
 [endroid/qrcode](https://packagist.org/packages/endroid/qrcode) 用于生成二维码  
 [phpgangsta/googleauthenticator](https://packagist.org/packages/phpgangsta/googleauthenticator) 令牌验证相关  
 [overtrue/wechat](https://packagist.org/packages/overtrue/wechat) 微信SDK  
