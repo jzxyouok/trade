@@ -155,21 +155,21 @@ $router->add(
 
 // 业务路由
 $router->add(
-    "/order/make",
+    "/trade/create",
     array(
-        'namespace' => 'MyApp\Controllers',
-        'controller' => 'payment',
-        'action' => 'make'
+        'namespace'  => 'MyApp\Controllers',
+        'controller' => 'trade',
+        'action'     => 'create'
     )
 );
 
 $router->add(
     "/notice/:params",
     array(
-        'namespace' => 'MyApp\Controllers',
-        'controller' => 'payment',
-        'action' => 'notice',
-        'param' => 1
+        'namespace'  => 'MyApp\Controllers',
+        'controller' => 'trade',
+        'action'     => 'notify',
+        'param'      => 1
     )
 );
 

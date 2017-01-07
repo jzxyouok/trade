@@ -3,7 +3,7 @@
 
 namespace MyApp\Controllers;
 
-use MyApp\Models\Orders;
+use MyApp\Models\Trade;
 use MyApp\Models\Utils;
 use MyApp\Services\Services;
 use Phalcon\Mvc\Dispatcher;
@@ -11,25 +11,26 @@ use Xxtime\Util;
 use Redis;
 
 
-class PaymentController extends ControllerBase
+class TradeController extends ControllerBase
 {
 
     private $_order;
-    private $ordersModel;
+    private $tradeModel;
 
     public function initialize()
     {
         parent::initialize();
-        $this->ordersModel = new Orders();
+        $this->tradeModel = new Trade();
     }
 
 
     /**
      * 异步通知
      */
-    public function noticeAction()
+    public function notifyAction()
     {
-        $uri = strpos($_SERVER['REQUEST_URI'], '?') ? substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?')) : $_SERVER['REQUEST_URI'];
+        $uri = strpos($_SERVER['REQUEST_URI'], '?') ? substr($_SERVER['REQUEST_URI'], 0,
+            strpos($_SERVER['REQUEST_URI'], '?')) : $_SERVER['REQUEST_URI'];
         writeLog($uri . '?' . urldecode(http_build_query($_REQUEST)), 'NOTICE' . date('Ym'));
         $gateway = trim($this->dispatcher->getParam('param'), '/');
         Services::pay($gateway)->notice();
@@ -43,7 +44,11 @@ class PaymentController extends ControllerBase
     {
         $this->initParams();
         if ($this->_order['gateway']) {
-            $this->ordersModel->makeOrder($this->_order);
+            $result = $this->tradeModel->createTrade($this->_order);
+            if (!$result) {
+                $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
+                exit();
+            }
             Services::pay($this->_order['gateway'])->adapter($this->_order);
             exit();
         }
@@ -54,14 +59,18 @@ class PaymentController extends ControllerBase
     /**
      * SDK下单
      */
-    public function makeAction()
+    public function createAction()
     {
         $gateway = $this->request->get('gateway');
         if (!$gateway) {
             Utils::outputJSON(array('code' => 1, 'msg' => 'Invalid Param [gateway]'));
         }
         $this->initParams();
-        $this->ordersModel->makeOrder($this->_order);
+        $result = $this->tradeModel->createTrade($this->_order);
+        if (!$result) {
+            $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
+            exit();
+        }
         Services::pay($gateway)->make($this->_order);
     }
 
@@ -85,7 +94,7 @@ class PaymentController extends ControllerBase
      */
     private function initParams()
     {
-        $user_id = $this->request->get('user_id', 'int');
+        $user_id = $this->request->get('user_id', 'alphanum');
         $this->_order['transaction'] = Util::createTransaction($this->getSequence(), $user_id);
 
         // 重要参数
@@ -105,7 +114,6 @@ class PaymentController extends ControllerBase
         $this->_order['adid'] = $this->request->get('adid', 'string');
         $this->_order['device'] = $this->request->get('device', 'string');
         $this->_order['channel'] = $this->request->get('channel', 'string');
-        $this->_order['custom'] = $this->request->get('custom', 'string');
 
         $this->_order['ip'] = $this->request->getClientAddress();
 
