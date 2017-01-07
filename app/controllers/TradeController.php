@@ -61,10 +61,13 @@ class TradeController extends ControllerBase
      */
     public function createAction()
     {
+        // 检查网关
         $gateway = $this->request->get('gateway');
         if (!$gateway) {
-            Utils::outputJSON(array('code' => 1, 'msg' => 'Invalid Param [gateway]'));
+            $this->response->setJsonContent(['code' => 1, 'msg' => 'Invalid Param [gateway]'])->send();
+            exit();
         }
+
         $this->initParams();
         $result = $this->tradeModel->createTrade($this->_order);
         if (!$result) {

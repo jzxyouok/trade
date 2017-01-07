@@ -155,16 +155,7 @@ $router->add(
 
 // 业务路由
 $router->add(
-    "/trade/create",
-    array(
-        'namespace'  => 'MyApp\Controllers',
-        'controller' => 'trade',
-        'action'     => 'create'
-    )
-);
-
-$router->add(
-    "/notice/:params",
+    "/notify/:params",
     array(
         'namespace'  => 'MyApp\Controllers',
         'controller' => 'trade',
