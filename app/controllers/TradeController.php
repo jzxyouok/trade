@@ -7,6 +7,7 @@ use MyApp\Models\Trade;
 use MyApp\Models\Utils;
 use MyApp\Services\Services;
 use Phalcon\Mvc\Dispatcher;
+use Xxtime\PayTime\Core\PayTime;
 use Xxtime\Util;
 use Redis;
 
@@ -49,7 +50,14 @@ class TradeController extends ControllerBase
                 $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
                 exit();
             }
-            Services::pay($this->_order['gateway'])->adapter($this->_order);
+            $PayTime = new PayTime(ucfirst($this->_order['gateway']) . '_Wap');
+            $PayTime->purchase([
+                'transactionId' => $this->_order['transaction'],
+                'amount'        => $this->_order['amount'],
+                'currency'      => $this->_order['currency'],
+                'productId'     => $this->_order['product_id'],
+                'productDesc'   => $this->_order['subject']
+            ])->send();
             exit();
         }
         $this->view->pick("payment/standard");
