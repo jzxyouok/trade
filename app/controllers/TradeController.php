@@ -51,6 +51,7 @@ class TradeController extends ControllerBase
                 exit();
             }
             $PayTime = new PayTime(ucfirst($this->_order['gateway']) . '_Wap');
+            $PayTime->setConfigFile(APP_DIR . '/config/trade.yml');
             $PayTime->purchase([
                 'transactionId' => $this->_order['transaction'],
                 'amount'        => $this->_order['amount'],
