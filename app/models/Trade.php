@@ -18,6 +18,21 @@ class Trade extends Model
 
 
     /**
+     * 获取订单信息
+     * @param string $transaction
+     * @return mixed
+     */
+    public function getTrade($transaction = '')
+    {
+        $sql = "SELECT * FROM `transactions` WHERE transaction=:transaction";
+        $bind = array('transaction' => $transaction);
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        return $query->fetch();
+    }
+
+
+    /**
      * 创建订单
      * @param array $tradeData
      * @return bool
@@ -61,23 +76,23 @@ class Trade extends Model
 
 
     /**
-     * 发货通知
-     * @param null $order_object
+     * 发货通知 TODO :: paid状态处理
+     * @param array $tradeInfo
+     * @param string $transactionReference
      * @return bool
      */
-    public function noticeTo($order_object = null)
+    public function noticeTo($tradeInfo = [], $transactionReference = null)
     {
-        $appConfig = $this->getAppConfig($order_object->app_id);
+        $appConfig = $this->getAppConfig($tradeInfo['app_id']);
 
         $data = array(
-            'transaction' => $order_object->transaction,
-            'gateway'     => $order_object->gateway,
-            'amount'      => $order_object->amount,
-            'currency'    => $order_object->currency,
-            'product_id'  => $order_object->product_id,
-            'user_id'     => $order_object->user_id,
-            'end_user'    => $order_object->end_user,
-            'custom'      => $order_object->custom,
+            'transaction' => $tradeInfo['transaction'],
+            'gateway'     => $tradeInfo['gateway'],
+            'amount'      => $tradeInfo['amount'],
+            'currency'    => $tradeInfo['currency'],
+            'product_id'  => $tradeInfo['product_id'],
+            'user_id'     => $tradeInfo['user_id'],
+            'end_user'    => $tradeInfo['end_user'],
             'timestamp'   => time(),
         );
         $data['sign'] = Util::createSign($data, $appConfig['secret_key']);
@@ -105,10 +120,10 @@ class Trade extends Model
 
         // 日志
         DI::getDefault()->get('dbData')->insertAsDict(
-            "logsNotice",
+            "notify_logs",
             array(
-                "transaction" => $order_object->transaction,
-                "url"         => $appConfig['notify_url'],
+                "transaction" => $tradeInfo['transaction'],
+                "notify_url"  => $appConfig['notify_url'],
                 "request"     => http_build_query($data),
                 "response"    => $response,
                 "create_time" => date('Y-m-d H:i:s')
@@ -116,10 +131,14 @@ class Trade extends Model
         );
 
         if (strtolower($response) == 'success') {
-            $order_object->status = 'complete';
-            $order_object->complete_time = date('Y-m-d H:i:s');
-            $order_object->save();
-            return true;
+            $dateTime = date('Y-m-d H:i:s');
+            $sql = "UPDATE transactions SET status='complete', complete_time=:dateTime, trade_no=:transactionReference WHERE transaction=:transaction";
+            $bind = array(
+                'transaction'          => $tradeInfo['transaction'],
+                'transactionReference' => $transactionReference,
+                'dateTime'             => $dateTime
+            );
+            return DI::getDefault()->get('dbData')->execute($sql, $bind);
         }
         return false;
     }
@@ -128,21 +147,19 @@ class Trade extends Model
     /**
      * 应用配置
      * @param int $app_id
-     * @return mixed
+     * @return appData
      */
     public function getAppConfig($app_id = 0)
     {
-        $sql = "SELECT app_id, secret_key, notify_url FROM `apps` WHERE 1=1";
-        $query = DI::getDefault()->get('dbData')->query($sql);
+        $sql = "SELECT app_id, secret_key, notify_url FROM `notify_apps` WHERE app_id=:app_id";
+        $bind = array('app_id' => $app_id);
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
-        $data = $query->fetchAll();
-        $data = array_column($data, null, 'app_id');
-        if (!isset($data[$app_id])) {
-            writeLog("APP:{$app_id}, Invalid App Config", 'Error' . date('Ym'));
-            Utils::outputJSON(array('code' => 1, 'msg' => "APP:{$app_id}, Invalid App Config"));
-            // TODO :: 缓存
+        $data = $query->fetch();
+        if (!$data) {
+            writeLog('no app config:' . $app_id);
         }
-        return $data[$app_id];
+        return $data;
     }
 
 

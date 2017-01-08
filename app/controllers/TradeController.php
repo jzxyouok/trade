@@ -10,6 +10,7 @@ use Phalcon\Mvc\Dispatcher;
 use Xxtime\PayTime\Core\PayTime;
 use Xxtime\Util;
 use Redis;
+use Phalcon\Logger\Adapter\File as FileLogger;
 
 
 class TradeController extends ControllerBase
@@ -30,11 +31,54 @@ class TradeController extends ControllerBase
      */
     public function notifyAction()
     {
+        // 日志
+        $logger = new FileLogger(BASE_DIR . $this->config->application->logsDir . 'notify' . date("Ym") . '.log');
         $uri = strpos($_SERVER['REQUEST_URI'], '?') ? substr($_SERVER['REQUEST_URI'], 0,
             strpos($_SERVER['REQUEST_URI'], '?')) : $_SERVER['REQUEST_URI'];
-        writeLog($uri . '?' . urldecode(http_build_query($_REQUEST)), 'NOTICE' . date('Ym'));
+        $logger->info($uri . '?' . urldecode(http_build_query($_REQUEST)));
+
+
+        // 回调
         $gateway = trim($this->dispatcher->getParam('param'), '/');
-        Services::pay($gateway)->notice();
+        $PayTime = new PayTime(ucfirst($gateway));
+        $PayTime->setConfigFile(APP_DIR . '/config/trade.yml');
+        $response = $PayTime->notify();
+
+
+        // 结果处理
+        $transactionId = $response->transactionId();
+        if (!$response->isSuccessful()) {
+            $logger->error($transactionId . ',' . $response->message());
+            $logger->close();
+            exit('failed');
+        }
+
+        $trade = $this->tradeModel->getTrade($transactionId);
+
+
+        if (!$trade) {
+            $logger->error($transactionId . ',' . 'no trade info');
+            $logger->close();
+            exit('failed');
+        }
+        $logger->close();
+
+
+        if ($trade['status'] == 'complete') {
+            exit('success');
+        }
+
+
+        if ($trade['status'] != 'pending') {
+            exit($trade['status']);
+        }
+
+
+        $response = $this->tradeModel->noticeTo($trade, $response->transactionReference());
+        // TODO :: 多种充值网关响应支持
+        if ($response) {
+            exit('success');
+        }
     }
 
 
