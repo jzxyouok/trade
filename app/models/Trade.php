@@ -40,8 +40,8 @@ class Trade extends Model
     public function createTrade($tradeData = [])
     {
         // 检查产品 TODO:: 卡类支付暂不适用
-        $sql = "SELECT id, price, currency FROM `products` WHERE status=1 AND app_id=:app_id AND product_id=:product_id";
-        $bind = array('app_id' => $tradeData['app_id'], 'product_id' => $tradeData['product_id']);
+        $sql = "SELECT id, price, currency FROM `products` WHERE status=1 AND product_id=:product_id";
+        $bind = array('product_id' => $tradeData['product_id']);
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
         $data = $query->fetch();
