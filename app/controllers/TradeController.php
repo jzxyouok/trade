@@ -69,7 +69,7 @@ class TradeController extends ControllerBase
         }
 
 
-        if ($trade['status'] != 'pending') {
+        if (!in_array($trade['status'], ['pending', 'paid'])) {
             exit($trade['status']);
         }
 

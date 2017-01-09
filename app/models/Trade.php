@@ -83,6 +83,18 @@ class Trade extends Model
      */
     public function noticeTo($tradeInfo = [], $transactionReference = null)
     {
+        // 付款状态
+        if ($tradeInfo['status'] == 'pending') {
+            $sql = "UPDATE transactions SET status='paid', trade_no=:transactionReference WHERE transaction=:transaction";
+            $bind = array(
+                'transaction'          => $tradeInfo['transaction'],
+                'transactionReference' => $transactionReference
+            );
+            DI::getDefault()->get('dbData')->execute($sql, $bind);
+        }
+
+
+        // 准备通知
         $appConfig = $this->getAppConfig($tradeInfo['app_id']);
 
         $data = array(
@@ -130,13 +142,13 @@ class Trade extends Model
             )
         );
 
+        // 完成
         if (strtolower($response) == 'success') {
             $dateTime = date('Y-m-d H:i:s');
-            $sql = "UPDATE transactions SET status='complete', complete_time=:dateTime, trade_no=:transactionReference WHERE transaction=:transaction";
+            $sql = "UPDATE transactions SET status='complete', complete_time=:dateTime WHERE transaction=:transaction";
             $bind = array(
-                'transaction'          => $tradeInfo['transaction'],
-                'transactionReference' => $transactionReference,
-                'dateTime'             => $dateTime
+                'transaction' => $tradeInfo['transaction'],
+                'dateTime'    => $dateTime
             );
             return DI::getDefault()->get('dbData')->execute($sql, $bind);
         }
