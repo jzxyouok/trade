@@ -289,7 +289,7 @@ class Weixin extends Controller
 
     private function outputError($msg = '')
     {
-        writeLog("TX:{$this->transaction}, {$msg}", 'ERROR' . date('Ym'));
+        writeLog("TX:{$this->transaction}, {$msg}", 'error' . date('Ym'));
         Utils::outputJSON(array('code' => 1, 'msg' => $msg));
     }
 

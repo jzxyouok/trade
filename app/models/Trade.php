@@ -47,7 +47,7 @@ class Trade extends Model
         $data = $query->fetch();
         if (!$data || ($data['price'] != $tradeData['amount'])) {
             $msg = "Invalid Product Config: {$tradeData['product_id']}";
-            writeLog("APP:{$tradeData['app_id']}, {$msg}", 'ERROR' . date('Ym'));
+            writeLog("APP:{$tradeData['app_id']}, {$msg}", 'error' . date('Ym'));
             return false;
         }
 
@@ -172,7 +172,7 @@ class Trade extends Model
         global $config;
         $k = $currency . 'USD';
         if (!isset($config->exchange->$k)) {
-            writeLog("No Exchange Config: {$currency}", 'ERROR' . date('Ym'));
+            writeLog("No Exchange Config: {$currency}", 'error' . date('Ym'));
             return 0;
         }
         return $amount * $config->exchange->$k;
