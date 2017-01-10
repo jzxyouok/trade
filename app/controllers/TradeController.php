@@ -164,7 +164,7 @@ class TradeController extends ControllerBase
         $this->_order['amount'] = $this->request->get('amount', 'float');
         $this->_order['currency'] = $this->request->get('currency', 'alphanum');
         $this->_order['product_id'] = $this->request->get('product_id', 'string');
-        $this->_order['subject'] = $this->request->get('subject', $this->_order['product_id']);
+        $this->_order['subject'] = $this->request->get('subject', 'string');
 
         // 统计参数
         $this->_order['uuid'] = $this->request->get('uuid', 'string');
@@ -177,6 +177,9 @@ class TradeController extends ControllerBase
         // 检查参数
         if (!$this->_order['app_id']) {
             Utils::outputJSON(array('code' => 1, 'msg' => 'Invalid Param [app_id]'));
+        }
+        if (!$this->_order['subject']) {
+            $this->_order['subject'] = $this->_order['product_id'];
         }
     }
 }
