@@ -94,6 +94,7 @@ class TradeController extends ControllerBase
                 $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
                 exit();
             }
+            dd($this->_order);
             $PayTime = new PayTime(ucfirst($this->_order['gateway']) . '_Wap');
             $PayTime->setConfigFile(APP_DIR . '/config/trade.yml');
             $PayTime->purchase([
@@ -163,7 +164,7 @@ class TradeController extends ControllerBase
         $this->_order['amount'] = $this->request->get('amount', 'float');
         $this->_order['currency'] = $this->request->get('currency', 'alphanum');
         $this->_order['product_id'] = $this->request->get('product_id', 'string');
-        $this->_order['subject'] = $this->request->get('subject', 'string');
+        $this->_order['subject'] = $this->request->get('subject', $this->_order['product_id']);
 
         // 统计参数
         $this->_order['uuid'] = $this->request->get('uuid', 'string');
