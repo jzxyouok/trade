@@ -94,7 +94,6 @@ class TradeController extends ControllerBase
                 $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
                 exit();
             }
-            dd($this->_order);
             $PayTime = new PayTime(ucfirst($this->_order['gateway']) . '_Wap');
             $PayTime->setConfigFile(APP_DIR . '/config/trade.yml');
             $PayTime->purchase([
