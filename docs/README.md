@@ -6,7 +6,7 @@
 gateway     | varchar(16)  | 是 | 支付网关
 app_id      | varchar(16)  | 是 | 应用ID
 subject     | varchar(64)  | 是 | 产品主题
-amount      | decimal(10,2)| 是 | 金额, 例: 4.99
+amount      | decimal(10,2)| 否 | 金额, 例: 4.99
 currency    | varchar(3)   | 是 | 币种, 例: CNY
 user_id     | varchar(16)  | 是 | 账号ID
 product_id  | varchar(60)  | 否 | 产品ID, 如不指定则跳转到选择产品界面

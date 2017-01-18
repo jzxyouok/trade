@@ -65,7 +65,7 @@ class Trade extends Model
             "app_id"      => $tradeData['app_id'],
             "user_id"     => $tradeData['user_id'],
             "amount"      => $data['price'],
-            "currency"    => $tradeData['currency'],
+            "currency"    => $tradeData['currency'] ? $tradeData['currency'] : 'CNY',
             "gateway"     => strtolower($tradeData['gateway']),
             "product_id"  => $tradeData['product_id'],
             "end_user"    => $tradeData['end_user'],
