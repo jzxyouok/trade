@@ -40,38 +40,47 @@ class Trade extends Model
     public function createTrade($tradeData = [])
     {
         // 检查产品 TODO:: 卡类支付暂不适用
-        $sql = "SELECT id, price, currency FROM `products` WHERE status=1 AND product_id=:product_id";
-        $bind = array('product_id' => $tradeData['product_id']);
-        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
-        $query->setFetchMode(Db::FETCH_ASSOC);
-        $data = $query->fetch();
-        if (!$data || ($data['price'] != $tradeData['amount'])) {
-            $msg = "Invalid Product Config: {$tradeData['product_id']}";
-            writeLog("APP:{$tradeData['app_id']}, {$msg}", 'error' . date('Ym'));
+        if (isset($tradeData['product_id'])) {
+            $sql = "SELECT id, price, currency FROM `products` WHERE status=1 AND product_id=:product_id";
+            $bind = array('product_id' => $tradeData['product_id']);
+            $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+            $query->setFetchMode(Db::FETCH_ASSOC);
+            $data = $query->fetch();
+
+            if (!$data) {
+                $msg = "Invalid Product Config: {$tradeData['product_id']}";
+                writeLog("APP:{$tradeData['app_id']}, {$msg}", 'error' . date('Ym'));
+                return false;
+            }
+        } elseif (isset($tradeData['amount'])) {
+            // TODO :: 额度支付
+            $data['price'] = $tradeData['amount'];
             return false;
         }
 
 
         // 创建订单
-        return DI::getDefault()->get('dbData')->insertAsDict(
-            "transactions",
-            array(
-                "transaction" => $tradeData['transaction'],
-                "app_id"      => $tradeData['app_id'],
-                "user_id"     => $tradeData['user_id'],
-                "amount"      => $tradeData['amount'],
-                "currency"    => $tradeData['currency'],
-                "gateway"     => strtolower($tradeData['gateway']),
-                "product_id"  => $tradeData['product_id'],
-                "end_user"    => $tradeData['end_user'],
-                "ip"          => $tradeData['ip'],
-                "uuid"        => strtoupper($tradeData['uuid']),
-                "adid"        => strtoupper($tradeData['adid']),
-                "device"      => $tradeData['device'],
-                "channel"     => $tradeData['channel'],
-                "create_time" => date('Y-m-d H:i:s')    // 不使用SQL自动插入时间，避免时区不统一
-            )
+        $trade = array(
+            "transaction" => $tradeData['transaction'],
+            "app_id"      => $tradeData['app_id'],
+            "user_id"     => $tradeData['user_id'],
+            "amount"      => $data['price'],
+            "currency"    => $tradeData['currency'],
+            "gateway"     => strtolower($tradeData['gateway']),
+            "product_id"  => $tradeData['product_id'],
+            "end_user"    => $tradeData['end_user'],
+            "ip"          => $tradeData['ip'],
+            "uuid"        => strtoupper($tradeData['uuid']),
+            "adid"        => strtoupper($tradeData['adid']),
+            "device"      => $tradeData['device'],
+            "channel"     => $tradeData['channel'],
+            "create_time" => date('Y-m-d H:i:s')    // 不使用SQL自动插入时间，避免时区不统一
         );
+        $result = DI::getDefault()->get('dbData')->insertAsDict("transactions", $trade);
+        if (!$result) {
+            return false;
+        }
+        return $trade;
     }
 
 
@@ -175,6 +184,12 @@ class Trade extends Model
     }
 
 
+    /**
+     * 转换美金
+     * @param int $amount
+     * @param string $currency
+     * @return int
+     */
     public function changeToUSD($amount = 0, $currency = '')
     {
         if ($currency == 'USD') {
@@ -188,6 +203,26 @@ class Trade extends Model
             return 0;
         }
         return $amount * $config->exchange->$k;
+    }
+
+
+    /** 获取产品
+     * @param int $app_id
+     * @param string $gateway
+     * @return mixed
+     */
+    public function getProducts($app_id = 0, $gateway = '')
+    {
+        $sql = "SELECT id,name,product_id,price,currency,coin,remark,image FROM `products` WHERE status=1 AND app_id=:app_id ";
+        $bind = array('app_id' => $app_id);
+        if ($gateway) {
+            $sql .= "AND gateway=:gateway";
+            $bind['gateway'] = $gateway;
+        }
+        $sql .= "ORDER BY sort DESC, price";
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        return $query->fetchAll();
     }
 
 }

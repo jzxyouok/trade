@@ -9,7 +9,7 @@ subject     | varchar(64)  | 是 | 产品主题
 amount      | decimal(10,2)| 是 | 金额, 例: 4.99
 currency    | varchar(3)   | 是 | 币种, 例: CNY
 user_id     | varchar(16)  | 是 | 账号ID
-product_id  | varchar(60)  | 是 | 产品ID
+product_id  | varchar(60)  | 否 | 产品ID, 如不指定则跳转到选择产品界面
 end_user    | varchar(64)  | 是 | 终端用户, 例: 201-800123
 uuid        | varchar(36)  | 否 | 唯一设备ID, 客户端生成, 例: 3F2504E0-4F89-11D3-9A0C-0305E82C3301
 adid        | varchar(36)  | 否 | 广告追踪标识, 客户端获取, 如IDFA, MAC

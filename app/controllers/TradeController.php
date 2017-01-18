@@ -88,7 +88,9 @@ class TradeController extends ControllerBase
     public function indexAction()
     {
         $this->initParams();
-        if ($this->_order['gateway']) {
+
+        // 直接储值
+        if ($this->_order['gateway'] && $this->_order['product_id']) {
             $result = $this->tradeModel->createTrade($this->_order);
             if (!$result) {
                 $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
@@ -97,15 +99,27 @@ class TradeController extends ControllerBase
             $PayTime = new PayTime(ucfirst($this->_order['gateway']) . '_Wap');
             $PayTime->setConfigFile(APP_DIR . '/config/trade.yml');
             $PayTime->purchase([
-                'transactionId' => $this->_order['transaction'],
-                'amount'        => $this->_order['amount'],
-                'currency'      => $this->_order['currency'],
-                'productId'     => $this->_order['product_id'],
+                'transactionId' => $result['transaction'],
+                'amount'        => $result['amount'],
+                'currency'      => $result['currency'],
+                'productId'     => $result['product_id'],
                 'productDesc'   => $this->_order['subject']
             ])->send();
             exit();
         }
-        $this->view->pick("payment/standard");
+
+
+        if (!$this->_order['gateway']) {
+            exit('暂仅支持指定网关');
+        }
+
+
+        $this->view->tips = '优惠购买送不停, 详情关注官方微信';
+
+
+        // 产品选择
+        $this->view->products = $this->tradeModel->getProducts($this->_order['app_id']);
+        $this->view->pick("trade/standard");
     }
 
 
@@ -127,7 +141,7 @@ class TradeController extends ControllerBase
             $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
             exit();
         }
-        Services::pay($gateway)->make($this->_order);
+        Services::pay($gateway)->make($result);
     }
 
 
