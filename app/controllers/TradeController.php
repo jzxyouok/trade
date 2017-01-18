@@ -103,7 +103,7 @@ class TradeController extends ControllerBase
                 'amount'        => $result['amount'],
                 'currency'      => $result['currency'],
                 'productId'     => $result['product_id'],
-                'productDesc'   => $this->_order['subject'] ? $this->_order['subject'] : $result['product_id']
+                'productDesc'   => $this->_order['subject'] ? urlencode($this->_order['subject']) : $result['product_id']
             ])->send();
             exit();
         }
