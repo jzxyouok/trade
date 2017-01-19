@@ -70,7 +70,7 @@ CREATE TABLE `oauth_accounts` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) unsigned DEFAULT '0',
   `platform` varchar(16) DEFAULT '',
-  `open_id` varchar(32) DEFAULT '',
+  `open_id` varchar(64) DEFAULT '',
   `open_name` varchar(32) DEFAULT '',
   `access_token` varchar(128) DEFAULT '',
   `refresh_token` varchar(128) DEFAULT '',

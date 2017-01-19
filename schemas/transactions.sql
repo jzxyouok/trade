@@ -6,8 +6,8 @@
 # https://github.com/sequelpro/sequelpro
 #
 # Host: 127.0.0.1 (MySQL 5.7.9)
-# Database: phalcon_data
-# Generation Time: 2017-01-06 11:17:26 +0000
+# Database: phalcon_trade
+# Generation Time: 2017-01-14 13:01:52 +0000
 # ************************************************************
 
 
@@ -20,44 +20,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
-# Dump of table accounts
+# Dump of table apps
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `accounts`;
+DROP TABLE IF EXISTS `apps`;
 
-CREATE TABLE `accounts` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) DEFAULT '0',
-  `amount` decimal(10,2) unsigned DEFAULT '0.00',
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
-
-# Dump of table notice_apps
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `notice_apps`;
-
-CREATE TABLE `notice_apps` (
+CREATE TABLE `apps` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(64) DEFAULT '',
   `app_id` varchar(16) DEFAULT '',
   `secret_key` varchar(32) DEFAULT '',
   `notify_url` varchar(512) DEFAULT '',
+  `trade_method` varchar(40) DEFAULT '',
+  `trade_tip` varchar(1000) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `app_id` (`app_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='应用';
 
 
 
-# Dump of table notice_logs
+# Dump of table notify_logs
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `notice_logs`;
+DROP TABLE IF EXISTS `notify_logs`;
 
-CREATE TABLE `notice_logs` (
+CREATE TABLE `notify_logs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `transaction` varchar(32) DEFAULT '0',
   `notify_url` varchar(1000) DEFAULT '',
@@ -88,22 +75,13 @@ CREATE TABLE `products` (
   `status` tinyint(3) unsigned DEFAULT '1',
   `sort` int(10) unsigned DEFAULT '0',
   `remark` varchar(255) DEFAULT '',
+  `image` varchar(1000) DEFAULT '',
   `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `product_id` (`product_id`),
-  KEY `product` (`app_id`,`gateway`,`price`)
+  UNIQUE KEY `product_id` (`product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-LOCK TABLES `products` WRITE;
-/*!40000 ALTER TABLE `products` DISABLE KEYS */;
-
-INSERT INTO `products` (`id`, `app_id`, `package`, `name`, `product_id`, `gateway`, `price`, `currency`, `coin`, `status`, `sort`, `remark`, `create_time`, `update_time`)
-VALUES
-	(1,'33','','','','',0.00,'',0,1,0,'','2017-01-06 19:00:48','2017-01-06 19:00:53');
-
-/*!40000 ALTER TABLE `products` ENABLE KEYS */;
-UNLOCK TABLES;
 
 
 # Dump of table transactions
@@ -134,7 +112,7 @@ CREATE TABLE `transactions` (
   PRIMARY KEY (`id`),
   KEY `transaction` (`transaction`),
   KEY `uuid` (`uuid`),
-  KEY `user_id` (`user_id`,`status`)
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付中心';
 
 
