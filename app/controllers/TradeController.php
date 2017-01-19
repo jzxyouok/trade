@@ -114,7 +114,9 @@ class TradeController extends ControllerBase
         }
 
 
-        $this->view->tips = '优惠购买送不停, 详情关注官方微信';
+        // tips
+        $app = $this->tradeModel->getAppConfig($this->_order['app_id']);
+        $this->view->tips = isset($app['trade_tip']) ? $app['trade_tip'] : '';
 
 
         // 产品选择

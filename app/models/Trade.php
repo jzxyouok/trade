@@ -172,7 +172,7 @@ class Trade extends Model
      */
     public function getAppConfig($app_id = 0)
     {
-        $sql = "SELECT app_id, secret_key, notify_url FROM `apps` WHERE app_id=:app_id";
+        $sql = "SELECT app_id,secret_key,notify_url,trade_method,trade_tip FROM `apps` WHERE app_id=:app_id";
         $bind = array('app_id' => $app_id);
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
