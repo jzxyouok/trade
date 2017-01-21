@@ -109,14 +109,20 @@ class TradeController extends ControllerBase
         }
 
 
-        if (!$this->_order['gateway']) {
-            exit('暂仅支持指定网关');
-        }
-
-
         // tips
         $app = $this->tradeModel->getAppConfig($this->_order['app_id']);
         $this->view->tips = isset($app['trade_tip']) ? $app['trade_tip'] : '';
+
+
+        // 选择网关
+        if (!$this->_order['gateway']) {
+            $this->view->gateways = $this->tradeModel->getGateways($this->_order['app_id']);
+            if (!$this->view->gateways) {
+                exit('error, no gateway');
+            }
+            $this->view->pick("trade/gateway");
+            return true;
+        }
 
 
         // 产品选择

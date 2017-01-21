@@ -206,7 +206,8 @@ class Trade extends Model
     }
 
 
-    /** 获取产品
+    /**
+     * 获取产品
      * @param int $app_id
      * @param string $gateway
      * @return mixed
@@ -223,6 +224,39 @@ class Trade extends Model
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
         return $query->fetchAll();
+    }
+
+
+    /**
+     * 获取网关
+     * @param int $app_id
+     * @return array|bool
+     */
+    public function getGateways($app_id = 0)
+    {
+        $sql = "SELECT trade_method FROM `apps` WHERE app_id=:app_id ";
+        $bind = array('app_id' => $app_id);
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        $data = $query->fetch();
+        if (!$data) {
+            return false;
+        }
+        $ways = [
+            'alipay' => [
+                'title'  => '支付宝',
+                'remark' => '推荐有支付宝账号的用户使用',
+            ],
+            'weixin' => [
+                'title'  => '微信支付',
+                'remark' => '',
+            ],
+            'paypal' => [
+                'title'  => 'PayPal',
+                'remark' => '',
+            ],
+        ];
+        return array_intersect_key($ways, array_flip(explode(',', $data['trade_method'])));
     }
 
 }
