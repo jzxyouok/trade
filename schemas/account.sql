@@ -69,7 +69,7 @@ DROP TABLE IF EXISTS `oauth_accounts`;
 CREATE TABLE `oauth_accounts` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) unsigned DEFAULT '0',
-  `platform` varchar(16) DEFAULT '',
+  `platform` enum('device','mobile','google','facebook','weixin','qq','alipay','weibo') DEFAULT NULL,
   `open_id` varchar(64) DEFAULT '',
   `open_name` varchar(32) DEFAULT '',
   `access_token` varchar(128) DEFAULT '',
