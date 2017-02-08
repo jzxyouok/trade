@@ -51,6 +51,13 @@ redis:
     index       : 1
     prefix      : cache_
 
+mq:
+    host        :
+    port        :
+    username    :
+    password    :
+    vhost       :
+
 sso:
     BaseUrl     : http://www.example.com/api/sso/
     appId       : 100

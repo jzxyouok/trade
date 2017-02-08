@@ -2,6 +2,7 @@
 
 namespace MyApp\Models;
 
+
 use Phalcon\Mvc\Model;
 use Phalcon\DI;
 use Phalcon\Db;
@@ -15,9 +16,9 @@ class Utils extends Model
     {
         $flash = json_encode(
             array(
-                'type' => $type,
-                'message' => $message,
-                'seconds' => !empty($seconds) ? $seconds : 3,
+                'type'     => $type,
+                'message'  => $message,
+                'seconds'  => !empty($seconds) ? $seconds : 3,
                 'redirect' => $redirect ? $redirect : 'javascript:history.back(-1)'
             )
         );

@@ -5,9 +5,10 @@ namespace MyApp\Controllers;
 
 use Phalcon\Mvc\Controller;
 use Phalcon\Mvc\Dispatcher;
+use Phalcon\Filter;
 use MyApp\Models\Demo;
 use MyApp\Services\Services;
-use Phalcon\Filter;
+use MyApp\Services\Queue;
 use Endroid\QrCode\QrCode;
 use PHPGangsta_GoogleAuthenticator;
 
@@ -150,6 +151,13 @@ class DemoController extends Controller
     {
         $response = Services::pay('paypal')->notice();
         dump($response);
+    }
+
+
+    public function quequeAction()
+    {
+        $queue = new Queue();
+        $queue->publish('queue.name', 'this is queue message');
     }
 
 

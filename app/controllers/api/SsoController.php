@@ -2,6 +2,7 @@
 
 namespace MyApp\Controllers\Api;
 
+
 use MyApp\Models\Auth;
 use MyApp\Models\Utils;
 use Endroid\QrCode\QrCode;
@@ -58,12 +59,12 @@ class SsoController extends ControllerBase
             // 登录日志
             $location = $this->utilsModel->getLocation($ipAddress);
             $log = array(
-                'user_id' => $userData['id'],
-                'ip' => $ipAddress,
-                'location' => $location,
+                'user_id'    => $userData['id'],
+                'ip'         => $ipAddress,
+                'location'   => $location,
                 'user_agent' => $user_agent,
-                'referer' => $referer,
-                'result' => $verifyResult ? 1 : 0,
+                'referer'    => $referer,
+                'result'     => $verifyResult ? 1 : 0,
             );
             $this->authModel->logsLogin($log);
 
@@ -198,9 +199,9 @@ class SsoController extends ControllerBase
             Utils::outputJSON(array('code' => 1, 'message' => 'failed'));
         }
         $user = array(
-            'user_id' => $user['id'],
+            'user_id'  => $user['id'],
             'username' => $user['username'],
-            'name' => $user['name']
+            'name'     => $user['name']
         );
         Utils::outputJSON(array('code' => 0, 'message' => 'success', 'data' => $user));
     }

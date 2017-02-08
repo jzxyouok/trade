@@ -2,11 +2,11 @@
 
 namespace MyApp\Models;
 
+
 use Phalcon\Mvc\Model;
 use Phalcon\DI;
 use Phalcon\Db;
 use Phalcon\Security\Random;
-
 
 /**
  * AuthController
@@ -160,7 +160,7 @@ class Auth extends Model
         $local = !empty($location['1']) ? $location['1'] : '';
         $local .= !empty($location['2']) ? $location['2'] : '';
         $params = [
-            'time' => (new \DateTime('now', new \DateTimeZone('Asia/Shanghai')))->format('H点i分'),
+            'time'     => (new \DateTime('now', new \DateTimeZone('Asia/Shanghai')))->format('H点i分'),
             'location' => $local
         ];
         include BASE_DIR . $config->application->pluginsDir . 'alidayu/TopSdk.php';
@@ -187,8 +187,8 @@ class Auth extends Model
         $random = new Random();
         $ticket = $random->base64Safe(64);
         $data = [
-            'user_id' => $user_id,
-            'ticket' => $ticket,
+            'user_id'     => $user_id,
+            'ticket'      => $ticket,
             'create_time' => date('Y-m-d H:i:s')
         ];
         DI::getDefault()->get('dbBackend')->insertAsDict("tickets", $data);
