@@ -37,7 +37,7 @@ class ControllerBase extends Controller
 
 
         // record request
-        if ($this->config->setting->recordRequest) {
+        if ($this->config->setting->requestLog) {
             if (isset($_REQUEST['_url'])) {
                 $_url = $_REQUEST['_url'];
                 unset($_REQUEST['_url']);
@@ -45,7 +45,7 @@ class ControllerBase extends Controller
                 $_url = '/';
             }
             $log = empty($_REQUEST) ? $_url : ($_url . '?' . urldecode(http_build_query($_REQUEST)));
-            $logger = new FileLogger(BASE_DIR . $this->config->application->logsDir . date("Ym") . '.log');
+            $logger = new FileLogger(APP_DIR . '/logs/' . date("Ym") . '.log');
             $logger->log($log, Logger::INFO);
         }
 

@@ -27,7 +27,7 @@ if (!function_exists('writeLog')) {
     function writeLog($log = '', $file = 'logs.txt')
     {
         global $config;
-        $log_file = BASE_DIR . $config->application->logsDir . $file;
+        $log_file = APP_DIR . '/logs/' . $file;
         $handle = fopen($log_file, "a+b");
         $text = date('Y-m-d H:i:s') . ' ' . $log . "\r\n";
         fwrite($handle, $text);

@@ -41,19 +41,19 @@ $di->set('crypt', function () use ($di) {
 
 $di->set('url', function () use ($di) {
     $url = new UrlResolver();
-    $url->setBaseUri($di['config']->application->baseUri);
+    $url->setBaseUri('/api/');
     return $url;
 }, true);
 
 
 $di->set('view', function () use ($di) {
     $view = new View();
-    $view->setViewsDir(BASE_DIR . $di['config']->application->viewsDir);
+    $view->setViewsDir(APP_DIR . '/views/');
     $view->registerEngines(array(
         '.html'  => function ($view, $di) {
             $volt = new VoltEngine($view, $di);
             $volt->setOptions(array(
-                'compiledPath'      => BASE_DIR . $di['config']->application->cacheDir,
+                'compiledPath'      => APP_DIR . '/cache/',
                 'compiledSeparator' => '_'
             ));
             return $volt;
@@ -84,7 +84,7 @@ $di->set('modelsCache', function () use ($di) {
     }
     // File Cache
     $cache = new BackFile($frontCache,
-        array('prefix' => 'cache_', 'cacheDir' => BASE_DIR . $di['config']->application->cacheDir));
+        array('prefix' => 'cache_', 'cacheDir' => APP_DIR . '/cache/'));
     return $cache;
 }, true);
 
@@ -153,7 +153,7 @@ $di->set('dbLog', function () use ($di) {
 $di['eventsManager']->attach('db', function ($event, $connection) use ($di) {
     if ($event->getType() == 'beforeQuery') {
         if ($di['config']->setting->recordSql) {
-            $logger = new FileLogger(BASE_DIR . $di['config']->application->logsDir . "logsSql.log");
+            $logger = new FileLogger(APP_DIR . '/logs/' . "logsSql.log");
             $logger->log($connection->getSQLStatement());
         }
         if (preg_match('/drop|alter/i', $connection->getSQLStatement())) {

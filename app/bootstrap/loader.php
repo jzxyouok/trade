@@ -15,7 +15,7 @@ include_once BASE_DIR . '/vendor/autoload.php';
 
 
 // load config file
-$configFile = APP_DIR . "/config/system";
+$configFile = APP_DIR . "/config/app";
 if (file_exists($configFile . '.yml')) {
     $config = new Config(Yaml::parse(file_get_contents($configFile . '.yml')));
 } else {
@@ -26,27 +26,25 @@ if (file_exists($configFile . '.yml')) {
 // loader
 $loader = new Loader();
 $loader->registerNamespaces(array(
-    'MyApp\Controllers\Api'   => BASE_DIR . $config->application->controllersDir . 'api/',
-    'MyApp\Controllers\Admin' => BASE_DIR . $config->application->controllersDir . 'admin/',
-    'MyApp\Controllers'       => BASE_DIR . $config->application->controllersDir,
-    'MyApp\Models'            => BASE_DIR . $config->application->modelsDir,
-    'MyApp\Services'          => BASE_DIR . $config->application->servicesDir,
-    'MyApp\Plugins'           => BASE_DIR . $config->application->pluginsDir,
-    'MyApp\Libraries'         => BASE_DIR . $config->application->librariesDir,
+    'MyApp\Controllers\Api'   => APP_DIR . '/controllers/api/',
+    'MyApp\Controllers\Admin' => APP_DIR . '/controllers/admin/',
+    'MyApp\Controllers'       => APP_DIR . '/controllers/',
+    'MyApp\Models'            => APP_DIR . '/models/',
+    'MyApp\Services'          => APP_DIR . '/services/',
+    'MyApp\Plugins'           => APP_DIR . '/plugins/',
+    'MyApp\Libraries'         => APP_DIR . '/libraries/',
 ))->register();
 
 
 // load common files
-include_once BASE_DIR . $config->application->pluginsDir . 'Common.php';
-if ($config->setting->sandbox == true) {
-    include BASE_DIR . $config->application->pluginsDir . 'Exception.php';
-}
+include APP_DIR . '/plugins/' . 'Common.php';
 
 
 // sandbox
 switch ($config->setting->sandbox) {
     case true:
-        error_reporting(E_ALL); //error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+        include APP_DIR . '/plugins/' . 'Exception.php';
+        error_reporting(E_ALL);
         break;
     default:
         header_remove('X-Powered-By');

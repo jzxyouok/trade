@@ -1,22 +1,11 @@
 setting:
     sandbox         : false
     securityPlugin  : 0
-    recordRequest   : false
+    requestLog      : false
     recordSql       : false
     timezone        : UTC
     cacheTime       : 600
     cryptKey        : xxxxxxxxxxxxxxxx
-
-application:
-    controllersDir  : /app/controllers/
-    modelsDir       : /app/models/
-    viewsDir        : /app/views/
-    servicesDir     : /app/services/
-    pluginsDir      : /app/plugins/
-    librariesDir    : /app/libraries/
-    cacheDir        : /app/cache/
-    logsDir         : /app/logs/
-    baseUri         : /api/
 
 db_data:
     adapter     : Mysql

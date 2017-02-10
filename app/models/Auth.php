@@ -163,7 +163,7 @@ class Auth extends Model
             'time'     => (new \DateTime('now', new \DateTimeZone('Asia/Shanghai')))->format('H点i分'),
             'location' => $local
         ];
-        include BASE_DIR . $config->application->pluginsDir . 'alidayu/TopSdk.php';
+        include APP_DIR . '/plugins/alidayu/TopSdk.php';
         $c = new \TopClient;
         $c->appkey = $config->sms->appID;
         $c->secretKey = $config->sms->appKey;
