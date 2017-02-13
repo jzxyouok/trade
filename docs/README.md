@@ -14,7 +14,7 @@ currency    | varchar(3)   | 是 | 币种, 例: CNY
 user_id     | varchar(16)  | 是 | 平台账号ID(user_id,access_token二选一)
 access_token| varchar(1000)| 是 | access_token(user_id,access_token二选一)
 product_id  | varchar(60)  | 否 | 产品ID, 如不指定则跳转到选择产品界面
-final_user  | varchar(64)  | 是 | 终端用户, 例: 201-800123
+custom      | varchar(64)  | 是 | 自定义, 例:终端用户201-800123
 uuid        | varchar(36)  | 否 | 唯一设备ID, 客户端生成, 例: 3F2504E0-4F89-11D3-9A0C-0305E82C3301
 adid        | varchar(36)  | 否 | 广告追踪标识, 客户端获取, 如IDFA, MAC
 device      | varchar(32)  | 否 | 设备信息, 如 iphone7 plus
@@ -34,7 +34,7 @@ currency    | varchar(3)   | 是 | 币种, 例: CNY
 user_id     | varchar(16)  | 是 | 平台账号ID
 access_token| varchar(1000)| 是 | access_token(user_id,access_token二选一)
 product_id  | varchar(60)  | 是 | 产品ID
-final_user  | varchar(64)  | 是 | 终端用户, 例: 201-800123
+custom      | varchar(64)  | 是 | 自定义, 例:终端用户201-800123
 uuid        | varchar(36)  | 否 | 唯一设备ID, 客户端生成, 例: 3F2504E0-4F89-11D3-9A0C-0305E82C3301
 adid        | varchar(36)  | 否 | 广告追踪标识, 客户端获取, 如IDFA, MAC
 device      | varchar(32)  | 否 | 设备信息, 如 iphone7 plus
@@ -47,10 +47,10 @@ channel     | varchar(32)  | 否 | 渠道信息, 如 baidu_ad
 本接口仅用于支付网关设置或者来自于客户端的支付结果通知(apple,google)
 
 *  Apple Store:  
-/notify/apple?app_id=100&user_id=100001&final_user=201-800123&receipt=xxxx
+/notify/apple?app_id=100&user_id=100001&custom=201-800123&receipt=xxxx
 
 *  Google Play:  
-/notify/google?app_id=100&user_id=100001&final_user=201-800123&receipt=xxxx&sign=xxxx
+/notify/google?app_id=100&user_id=100001&custom=201-800123&receipt=xxxx&sign=xxxx
 
 参数说明:  
 
@@ -59,7 +59,7 @@ channel     | varchar(32)  | 否 | 渠道信息, 如 baidu_ad
 app_id      | varchar(16)  | 是 | 应用ID
 access_token| varchar(1000)| 是 | 平台token(user_id,access_token二选一)
 user_id     | varchar(16)  | 是 | 平台账号ID(user_id,access_token二选一)
-final_user  | varchar(64)  | 否 | 终端用户标识
+custom      | varchar(64)  | 否 | 自定义, 例:终端用户201-800123
 receipt     | varchar(1000)| 是 | Apple/Google收据
 sign        | varchar(1000)| 否 | 签名, 仅Google平台有,Google必填
 
@@ -68,7 +68,7 @@ sign        | varchar(1000)| 否 | 签名, 仅Google平台有,Google必填
 CP-Server如正确处理通知后则返回**success**，其他任何返回视为失败
 
 示例请求URL: (为方便理解此示例使用get方式展示 正式环境使用post通知)  
-[https://www.example.com/api?transaction=20170117081802187424000665&gateway=alipay&amount=0.05&currency=CNY&product_id=com.xt.product&user_id=100001&final_user=201-800123&timestamp=1484641146&sign=5f8f696fb8312d9ad5f1150e41d68282](javascript:void())
+[https://www.example.com/api?transaction=20170117081802187424000665&gateway=alipay&amount=0.05&currency=CNY&product_id=com.xt.product&user_id=100001&custom=201-800123&timestamp=1484641146&sign=5f8f696fb8312d9ad5f1150e41d68282](#)
 
 通知参数如下:  
 
@@ -80,7 +80,7 @@ amount      | decimal(10,2)| 支付金额(元)
 currency    | varchar(3)   | 货币类型
 product_id  | varchar(60)  | 产品ID
 user_id     | varchar(16)  | 平台账号ID
-final_user  | varchar(64)  | 终端用户标识
+custom      | varchar(64)  | 自定义, 例:终端用户201-800123
 timestamp   | varchar(10)  | 通知时间戳
 sign        | varchar(32)  | 签名(用于CP-Server验证)
 

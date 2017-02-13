@@ -101,7 +101,7 @@ CREATE TABLE `transactions` (
   `gateway` varchar(16) DEFAULT NULL COMMENT '支付网关',
   `trade_no` varchar(32) DEFAULT NULL COMMENT '网关订单号',
   `product_id` varchar(60) DEFAULT '' COMMENT '产品ID',
-  `final_user` varchar(64) DEFAULT '' COMMENT '终端用户标识',
+  `custom` varchar(64) DEFAULT '' COMMENT '自定义',
   `ip` varchar(15) DEFAULT '' COMMENT 'IP',
   `uuid` varchar(36) DEFAULT '' COMMENT '唯一设备标识',
   `adid` varchar(40) DEFAULT '' COMMENT '广告追踪标识',

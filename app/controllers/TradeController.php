@@ -181,7 +181,7 @@ class TradeController extends ControllerBase
 
         // 关键参数
         $this->_order['user_id'] = $user_id;
-        $this->_order['final_user'] = $this->request->get('final_user', 'string');
+        $this->_order['custom'] = $this->request->get('custom', 'string');
         $this->_order['amount'] = $this->request->get('amount', 'float');
         $this->_order['currency'] = $this->request->get('currency', 'alphanum');
         $this->_order['product_id'] = $this->request->get('product_id', 'string');

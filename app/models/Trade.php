@@ -68,7 +68,7 @@ class Trade extends Model
             "currency"    => $tradeData['currency'] ? $tradeData['currency'] : 'CNY',
             "gateway"     => strtolower($tradeData['gateway']),
             "product_id"  => $tradeData['product_id'],
-            "final_user"  => $tradeData['final_user'],
+            "custom"      => $tradeData['custom'],
             "ip"          => $tradeData['ip'],
             "uuid"        => strtoupper($tradeData['uuid']),
             "adid"        => strtoupper($tradeData['adid']),
@@ -113,7 +113,7 @@ class Trade extends Model
             'currency'    => $tradeInfo['currency'],
             'product_id'  => $tradeInfo['product_id'],
             'user_id'     => $tradeInfo['user_id'],
-            'final_user'  => $tradeInfo['final_user'],
+            'custom'      => $tradeInfo['custom'],
             'timestamp'   => time(),
         );
         $data['sign'] = Util::createSign($data, $appConfig['secret_key']);
