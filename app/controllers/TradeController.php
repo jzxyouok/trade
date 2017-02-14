@@ -33,7 +33,7 @@ class TradeController extends ControllerBase
     public function notifyAction()
     {
         // 日志
-        $logger = new FileLogger(BASE_DIR . $this->config->application->logsDir . 'notify' . date("Ym") . '.log');
+        $logger = new FileLogger(APP_DIR . '/logs/notify' . date("Ym") . '.log');
         $uri = strpos($_SERVER['REQUEST_URI'], '?') ? substr($_SERVER['REQUEST_URI'], 0,
             strpos($_SERVER['REQUEST_URI'], '?')) : $_SERVER['REQUEST_URI'];
         $logger->info($uri . '?' . urldecode(http_build_query($_REQUEST)));
@@ -41,24 +41,26 @@ class TradeController extends ControllerBase
 
         // 回调
         $gateway = trim($this->dispatcher->getParam('param'), '/');
-        $PayTime = new PayTime(ucfirst($gateway));
-        $PayTime->setConfigFile(APP_DIR . '/config/trade.yml');
-        $response = $PayTime->notify();
+
+
+        unset($_GET['_url']); // 必须去掉_url
+        $payTime = new PayTime(ucfirst($gateway));
+        $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
+        $payTime->setOptions($this->tradeModel->getFullPath($config[$gateway]));
+        $response = $payTime->notify();
 
 
         // 结果处理
-        $transactionId = $response->transactionId();
-        if (!$response->isSuccessful()) {
-            $logger->error($transactionId . ',' . $response->message());
+        $transactionId = $response['transactionId'];
+        if (!$response['isSuccessful']) {
+            $logger->error($transactionId . '|' . $response['message']);
             $logger->close();
             exit('failed');
         }
 
         $trade = $this->tradeModel->getTrade($transactionId);
-
-
         if (!$trade) {
-            $logger->error($transactionId . ',' . 'no trade info');
+            $logger->error($transactionId . '|' . 'no trade info');
             $logger->close();
             exit('failed');
         }
@@ -75,7 +77,7 @@ class TradeController extends ControllerBase
         }
 
 
-        $response = $this->tradeModel->noticeTo($trade, $response->transactionReference());
+        $response = $this->tradeModel->noticeTo($trade, $response['transactionReference']);
         // TODO :: 多种充值网关响应支持
         if ($response) {
             exit('success');
