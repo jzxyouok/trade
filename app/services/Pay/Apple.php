@@ -37,7 +37,8 @@ class Apple extends Controller
         // 验证
         $response = $this->verify();
         if ($response === false) {
-            Util::output(array('code' => 1, 'msg' => "Order Verify Error"));
+            $this->response->setJsonContent(['code' => 1, 'msg' => "order verify failed"])->send();
+            exit();
         }
         $transactionReference = $response['transactionReference'];
         $product_id = $response['product_id'];
@@ -75,7 +76,7 @@ class Apple extends Controller
             ];
             $trade = $this->tradeModel->createTrade($trade_data);
         } else {
-            if ($trade['status'] == 'complete') {
+            if (in_array($trade['status'], ['complete', 'sandbox'])) {
                 $this->response->setJsonContent(['code' => 0, 'msg' => 'success'])->send();
                 exit();
             }
