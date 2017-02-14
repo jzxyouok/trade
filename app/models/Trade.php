@@ -33,6 +33,63 @@ class Trade extends Model
 
 
     /**
+     * 获取订单信息
+     * @param string $gateway
+     * @param string $Reference
+     * @return mixed
+     */
+    public function getTradeByReference($gateway = '', $Reference = '')
+    {
+        $sql = "SELECT * FROM `transactions` WHERE gateway=:gateway AND trade_no=:trade_no";
+        $bind = array('gateway' => $gateway, 'trade_no' => $Reference);
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        return $query->fetch();
+    }
+
+
+    /**
+     * 更新订单状态
+     * @param string $transaction
+     * @param string $status
+     * @return bool
+     */
+    public function updateTradeStatus($transaction = '', $status = '')
+    {
+        if (!$transaction || !$status) {
+            return false;
+        }
+        $sql = "UPDATE `transactions` SET status=:status WHERE transaction=:transaction";
+        $bind = array('status' => $status, 'transaction' => $transaction);
+        return DI::getDefault()->get('dbData')->execute($sql, $bind);
+    }
+
+
+    /**
+     * 创建订单号
+     * @param int $code
+     * @return bool|string
+     */
+    public function createTransaction($code = 0)
+    {
+        $config = DI::getDefault()->get('config');
+        $redis = new \Redis();
+        $redis->connect($config->redis->host, $config->redis->port);
+        $redis->select(1);
+        $sequence = $redis->incr('sequence');
+
+        $main = date('YmdHi');
+        if ($code) {
+            $main .= str_pad(substr($code, -2), 2, '0', STR_PAD_LEFT);
+        }
+        $sequence = str_pad($sequence, 6, '0', STR_PAD_LEFT);
+        $rand = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $main .= substr($sequence, -3, 3) . substr($rand, 0, 3) . substr($sequence, -6, 3) . substr($rand, 3, 3);
+        return $main;
+    }
+
+
+    /**
      * 创建订单
      * @param array $tradeData
      * @return bool
@@ -69,6 +126,8 @@ class Trade extends Model
             "gateway"     => strtolower($tradeData['gateway']),
             "product_id"  => $tradeData['product_id'],
             "custom"      => $tradeData['custom'],
+            "status"      => isset($tradeData['status']) ? $tradeData['status'] : null,
+            "trade_no"    => isset($tradeData['trade_no']) ? $tradeData['trade_no'] : null,
             "ip"          => $tradeData['ip'],
             "uuid"        => strtoupper($tradeData['uuid']),
             "adid"        => strtoupper($tradeData['adid']),
@@ -76,7 +135,7 @@ class Trade extends Model
             "channel"     => $tradeData['channel'],
             "create_time" => date('Y-m-d H:i:s')    // 不使用SQL自动插入时间，避免时区不统一
         );
-        $result = DI::getDefault()->get('dbData')->insertAsDict("transactions", $trade);
+        $result = DI::getDefault()->get('dbData')->insertAsDict("transactions", array_filter($trade));
         if (!$result) {
             return false;
         }
@@ -85,7 +144,7 @@ class Trade extends Model
 
 
     /**
-     * 发货通知 TODO :: paid状态处理
+     * 发货通知; 只能是pending或paid状态
      * @param array $tradeInfo
      * @param string $transactionReference
      * @return bool
@@ -224,6 +283,21 @@ class Trade extends Model
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
         return $query->fetchAll();
+    }
+
+
+    /**
+     * 获取产品
+     * @param string $product_id
+     * @return mixed
+     */
+    public function getProductById($product_id = '')
+    {
+        $sql = "SELECT id,name,product_id,price,currency,coin,remark,image FROM `products` WHERE status=1 AND product_id=:product_id ";
+        $bind = array('product_id' => $product_id);
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        return $query->fetch();
     }
 
 

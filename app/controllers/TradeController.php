@@ -37,13 +37,21 @@ class TradeController extends ControllerBase
         $uri = strpos($_SERVER['REQUEST_URI'], '?') ? substr($_SERVER['REQUEST_URI'], 0,
             strpos($_SERVER['REQUEST_URI'], '?')) : $_SERVER['REQUEST_URI'];
         $logger->info($uri . '?' . urldecode(http_build_query($_REQUEST)));
+        unset($_GET['_url']); // 必须去掉_url
 
 
         // 回调
         $gateway = trim($this->dispatcher->getParam('param'), '/');
 
 
-        unset($_GET['_url']); // 必须去掉_url
+        // Apple && Google
+        if (in_array($gateway, ['apple', 'google'])) {
+            $service = Services::pay($gateway);
+            $service->notify();
+            exit();
+        }
+
+
         $payTime = new PayTime(ucfirst($gateway));
         $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
         $payTime->setOptions($this->tradeModel->getFullPath($config[$gateway]));
