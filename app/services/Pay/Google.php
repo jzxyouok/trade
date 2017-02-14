@@ -4,15 +4,14 @@ namespace MyApp\Services\Pay;
 
 use MyApp\Models\Trade;
 use Phalcon\Mvc\Controller;
+use Symfony\Component\Yaml\Yaml;
 
-class Apple extends Controller
+class Google extends Controller
 {
 
     private $tradeModel;
 
-
     private $_receipt;
-
 
     private $_isSandbox = false;
 
@@ -111,59 +110,50 @@ class Apple extends Controller
 
     /**
      * 交易验证
-     * @link https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html
-     * @link https://developer.apple.com/library/content/releasenotes/General/ValidateAppStoreReceipt/Chapters/ReceiptFields.html#//apple_ref/doc/uid/TP40010573-CH106-SW1
      * @return array|bool
      */
     public function verify()
     {
         $this->_receipt = $this->request->get('receipt');
-        if (!$this->_receipt) {
-            return false;
-        }
-        $this->_receipt = str_replace(' ', '+', $this->_receipt);
+        $sign = $this->request->get('sign', 'string');
+        $sign = str_replace(' ', '+', $sign);
 
-        // 正式环境验证
-        $url = 'https://buy.itunes.apple.com/verifyReceipt';
-        $data = json_encode(array('receipt-data' => $this->_receipt));
-        $response = file_get_contents($url, false, stream_context_create(array(
-            'http' => array(
-                'timeout' => 30,
-                'method'  => 'POST',
-                'header'  => 'Content-Type:application/x-www-form-urlencoded;',
-                'content' => $data
-            )
-        )));
-        $verify = json_decode($response, true);
-        if (!$verify) {
+
+        if (!$this->_receipt || !$sign) {
             return false;
         }
 
 
-        // 沙箱环境验证
-        if ($verify['status'] == 21007) {
-            $url = 'https://sandbox.itunes.apple.com/verifyReceipt';
-            $response = file_get_contents($url, false, stream_context_create(array(
-                'http' => array(
-                    'timeout' => 30,
-                    'method'  => 'POST',
-                    'header'  => 'Content-Type:application/x-www-form-urlencoded;',
-                    'content' => $data
-                )
-            )));
-            $this->_isSandbox = true;
-            $verify = json_decode($response, true);
+        $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
+        $config = $config['google'];
+
+        // TODO :: 多包名支持
+        if (isset($config['default'])) {
+            $public_key = $config['default'];
+        } else {
+            $public_key = $config;
         }
-        if ($verify['status'] != 0) {
+
+
+        $public_key = "-----BEGIN PUBLIC KEY-----\n" .
+            chunk_split($public_key, 64, "\n") .
+            '-----END PUBLIC KEY-----';
+
+        $pub_key_id = openssl_get_publickey($public_key);
+        $signature = base64_decode($sign);
+        $result = openssl_verify($this->_receipt, $signature, $pub_key_id, OPENSSL_ALGO_SHA1);
+        if ($result == 1) {
+            $receipt = json_decode($this->_receipt);
+            $result = array(
+                'transactionReference' => $receipt->orderId,
+                'product_id'           => $receipt->productId,
+            );
+            return $result;
+        } elseif ($result == 0) {
+            return false;
+        } else {
             return false;
         }
-
-        $result = array(
-            'transactionReference' => $verify['receipt']['original_transaction_id'],
-            'product_id'           => $verify['receipt']['product_id']
-        );
-
-        return $result;
     }
 
 }
