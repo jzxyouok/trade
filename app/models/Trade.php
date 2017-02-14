@@ -259,4 +259,21 @@ class Trade extends Model
         return array_intersect_key($ways, array_flip(explode(',', $data['trade_method'])));
     }
 
+
+    /**
+     * 获取配置文件绝对路径
+     * @param array $config
+     * @return array
+     */
+    public function getFullPath($config = [])
+    {
+        $keyWord = ['privateKey', 'publicKey'];
+        foreach ($keyWord as $word) {
+            if (array_key_exists($word, $config) && strpos($config[$word], '/') !== 0) {
+                $config[$word] = BASE_DIR . '/' . $config[$word];
+            }
+        }
+        return $config;
+    }
+
 }

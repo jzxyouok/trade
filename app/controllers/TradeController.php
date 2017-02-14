@@ -7,7 +7,8 @@ use MyApp\Models\Trade;
 use MyApp\Models\Utils;
 use MyApp\Services\Services;
 use Phalcon\Mvc\Dispatcher;
-use Xxtime\PayTime\Core\PayTime;
+use Symfony\Component\Yaml\Yaml;
+use Xxtime\PayTime\PayTime;
 use Xxtime\Util;
 use Redis;
 use Phalcon\Logger\Adapter\File as FileLogger;
@@ -89,22 +90,38 @@ class TradeController extends ControllerBase
     {
         $this->initParams();
 
+
         // 直接储值
         if ($this->_order['gateway'] && $this->_order['product_id']) {
+
+            $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
+
+            $gateway = $this->_order['gateway'];
+
+            // 检查配置
+            if (!isset($config[$gateway])) {
+                $this->response->setJsonContent(['code' => 1, 'msg' => 'no config about the gateway'])->send();
+                exit();
+            }
+
+            // 创建订单
             $result = $this->tradeModel->createTrade($this->_order);
             if (!$result) {
                 $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
                 exit();
             }
-            $PayTime = new PayTime(ucfirst($this->_order['gateway']) . '_Wap');
-            $PayTime->setConfigFile(APP_DIR . '/config/trade.yml');
-            $PayTime->purchase([
+
+            // PayTime
+            $payTime = new PayTime(ucfirst($gateway) . '_Wap');
+            $payTime->setOptions($this->tradeModel->getFullPath($config[$gateway]));
+            $payTime->purchase([
                 'transactionId' => $result['transaction'],
                 'amount'        => $result['amount'],
                 'currency'      => $result['currency'],
                 'productId'     => $result['product_id'],
                 'productDesc'   => $this->_order['subject'] ? urlencode($this->_order['subject']) : $result['product_id']
-            ])->send();
+            ]);
+            $payTime->send();
             exit();
         }
 
