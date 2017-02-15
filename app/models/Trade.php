@@ -2,10 +2,13 @@
 
 namespace MyApp\Models;
 
+
+use Firebase\JWT\JWT;
 use Phalcon\Mvc\Model;
 use Phalcon\DI;
 use Phalcon\Db;
 use Xxtime\Util;
+use Exception;
 
 class Trade extends Model
 {
@@ -14,6 +17,29 @@ class Trade extends Model
     {
         $this->setConnectionService('dbData');
         $this->setSource("transactions");
+    }
+
+
+    /**
+     * 验证access_token
+     * @param string $jwt
+     * @return array|bool
+     */
+    public function verifyAccessToken($jwt = '')
+    {
+        $key = DI::getDefault()->get('config')->setting->cryptKey;
+        try {
+            JWT::$leeway = 300; // 允许误差秒数
+            $decoded = JWT::decode($jwt, $key, array('HS256'));
+            return [
+                'open_id' => $decoded->open_id,
+                'name'    => $decoded->name,
+                'gender'  => $decoded->gender,
+                'photo'   => $decoded->photo,
+            ];
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
 

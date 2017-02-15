@@ -11,7 +11,9 @@ class Google extends Controller
 
     private $tradeModel;
 
+
     private $_receipt;
+
 
     private $_isSandbox = false;
 
@@ -19,18 +21,23 @@ class Google extends Controller
     // 交易通知
     public function notify()
     {
+        $this->tradeModel = new Trade();
+
+
         // 整理参数
         $app_id = $this->request->get('app_id', 'string');
         $user_id = $this->request->get('user_id', 'string');
         $custom = $this->request->get('custom', 'string');
         $ipAddress = $this->request->getClientAddress();
+        if (!$user_id) {
+            $jwt = $this->request->get('access_token', 'string');
+            $account = $this->tradeModel->verifyAccessToken($jwt);
+            $user_id = $account['open_id'];
+        }
         if (!$app_id || !$user_id) {
             $this->response->setJsonContent(['code' => 1, 'msg' => 'argv missing'])->send();
             exit();
         }
-
-
-        $this->tradeModel = new Trade();
 
 
         // 验证

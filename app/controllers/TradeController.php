@@ -16,12 +16,26 @@ class TradeController extends ControllerBase
 {
 
     private $_order;
+
+
     private $tradeModel;
+
+
+    public $_user_id;
+
 
     public function initialize()
     {
         parent::initialize();
+
         $this->tradeModel = new Trade();
+
+        $this->_user_id = $this->request->get('user_id', 'alphanum');
+        if (!$this->_user_id) {
+            $jwt = $this->request->get('access_token', 'string');
+            $account = $this->tradeModel->verifyAccessToken($jwt);
+            $this->_user_id = $account['open_id'];
+        }
     }
 
 
@@ -38,7 +52,7 @@ class TradeController extends ControllerBase
         unset($_GET['_url']); // 必须去掉_url
 
 
-        // 回调
+        // 网关
         $gateway = trim($this->dispatcher->getParam('param'), '/');
 
 
@@ -183,15 +197,14 @@ class TradeController extends ControllerBase
      */
     private function initParams()
     {
-        $user_id = $this->request->get('user_id', 'alphanum');
-        $this->_order['transaction'] = $this->tradeModel->createTransaction($user_id);
+        $this->_order['transaction'] = $this->tradeModel->createTransaction($this->_user_id);
 
         // 重要参数
         $this->_order['app_id'] = $this->request->get('app_id', 'alphanum');
         $this->_order['gateway'] = $this->request->get('gateway', 'alphanum');
 
         // 关键参数
-        $this->_order['user_id'] = $user_id;
+        $this->_order['user_id'] = $this->_user_id;
         $this->_order['custom'] = $this->request->get('custom', 'string');
         $this->_order['amount'] = $this->request->get('amount', 'float');
         $this->_order['currency'] = $this->request->get('currency', 'alphanum');
