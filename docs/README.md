@@ -11,8 +11,8 @@ app_id      | varchar(16)  | 是 | 应用ID
 subject     | varchar(64)  | 是 | 产品主题
 amount      | decimal(10,2)| 否 | 金额, 例: 4.99
 currency    | varchar(3)   | 是 | 币种, 例: CNY
-user_id     | varchar(16)  | 是 | 平台账号ID(user_id,access_token二选一)
-access_token| varchar(1000)| 是 | access_token(user_id,access_token二选一)
+user_id     | varchar(16)  |[是]| 平台账号ID(user_id,access_token二选一)
+access_token| varchar(1000)|[是]| access_token(user_id,access_token二选一)
 product_id  | varchar(60)  | 否 | 产品ID, 如不指定则跳转到选择产品界面
 custom      | varchar(64)  | 是 | 自定义, 例:终端用户201-800123
 uuid        | varchar(36)  | 否 | 唯一设备ID, 客户端生成, 例: 3F2504E0-4F89-11D3-9A0C-0305E82C3301
@@ -31,8 +31,8 @@ app_id      | varchar(16)  | 是 | 应用ID
 subject     | varchar(64)  | 是 | 产品主题
 amount      | decimal(10,2)| 是 | 金额, 例: 4.99
 currency    | varchar(3)   | 是 | 币种, 例: CNY
-user_id     | varchar(16)  | 是 | 平台账号ID
-access_token| varchar(1000)| 是 | access_token(user_id,access_token二选一)
+user_id     | varchar(16)  |[是]| 平台账号ID
+access_token| varchar(1000)|[是]| access_token(user_id,access_token二选一)
 product_id  | varchar(60)  | 是 | 产品ID
 custom      | varchar(64)  | 是 | 自定义, 例:终端用户201-800123
 uuid        | varchar(36)  | 否 | 唯一设备ID, 客户端生成, 例: 3F2504E0-4F89-11D3-9A0C-0305E82C3301
@@ -47,28 +47,30 @@ channel     | varchar(32)  | 否 | 渠道信息, 如 baidu_ad
 本接口仅用于支付网关设置或者来自于客户端的支付结果通知(apple,google)
 
 *  Apple Store:  
-/notify/apple?app_id=100&user_id=100001&custom=201-800123&receipt=xxxx
+/notify/apple?app_id=100&user_id=100001&custom=201-800123&receipt=xxxx  
+/notify/apple?app_id=100&access_token=xxxx&custom=201-800123&receipt=xxxx
 
 *  Google Play:  
-/notify/google?app_id=100&user_id=100001&custom=201-800123&receipt=xxxx&sign=xxxx
+/notify/google?app_id=100&user_id=100001&custom=201-800123&receipt=xxxx&sign=xxxx  
+/notify/google?app_id=100&access_token=xxxx&custom=201-800123&receipt=xxxx&sign=xxxx
 
 参数说明:  
 
 参数名 | 类型 | 必选 | 描述
 --- | --- |:---:| ---
 app_id      | varchar(16)  | 是 | 应用ID
-access_token| varchar(1000)| 是 | 平台token(user_id,access_token二选一)
-user_id     | varchar(16)  | 是 | 平台账号ID(user_id,access_token二选一)
+access_token| varchar(1000)|[是]| 平台token(user_id,access_token二选一)
+user_id     | varchar(16)  |[是]| 平台账号ID(user_id,access_token二选一)
 custom      | varchar(64)  | 否 | 自定义, 例:终端用户201-800123
 receipt     | varchar(1000)| 是 | Apple/Google收据
-sign        | varchar(1000)| 否 | 签名, 仅Google平台有,Google必填
+sign        | varchar(1000)|[是]| 签名, 仅Google平台有,Google必填
 
 #### 储值结果通知到CP-Server
 用户在与支付网关完成交易后，平台会把支付的结果通过post方式通知给CP-Server(如游戏服务器)  
 CP-Server如正确处理通知后则返回**success**，其他任何返回视为失败
 
 示例请求URL: (为方便理解此示例使用get方式展示 正式环境使用post通知)  
-[https://www.example.com/api?transaction=20170117081802187424000665&gateway=alipay&amount=0.05&currency=CNY&product_id=com.xt.product&user_id=100001&custom=201-800123&timestamp=1484641146&sign=5f8f696fb8312d9ad5f1150e41d68282](#)
+[https://host/api?transaction=20170117081802187424000665&gateway=alipay&amount=0.05&currency=CNY&product_id=com.xt.product&user_id=100001&custom=201-800123&timestamp=1484641146&sign=5f8f696fb8312d9ad5f1150e41d68282](#)
 
 通知参数如下:  
 
