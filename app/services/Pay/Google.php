@@ -59,7 +59,7 @@ class Google extends Controller
         $product = $this->tradeModel->getProductById($product_id);
         if (!$product) {
             // todo :: 日志
-            $this->response->setJsonContent(['code' => 1, 'msg' => "no available product $product_id"])->send();
+            $this->response->setJsonContent(['code' => 1, 'msg' => "unavailable product $product_id"])->send();
             exit();
         }
 
