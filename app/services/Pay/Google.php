@@ -26,7 +26,7 @@ class Google extends Controller
 
         // 整理参数
         $app_id = $this->request->get('app_id', 'string');
-        $user_id = $this->request->get('user_id', 'string');
+        $user_id = $this->request->get('user_id', 'int');
         $custom = $this->request->get('custom', 'string');
         $ipAddress = $this->request->getClientAddress();
         if (!$user_id) {
@@ -48,7 +48,7 @@ class Google extends Controller
         $response = $this->verify();
         if ($response === false) {
             // TODO :: 日志
-            $this->response->setJsonContent(['code' => 1, 'msg' => "order verify failed"])->send();
+            $this->response->setJsonContent(['code' => 1, 'msg' => "receipt verify failed"])->send();
             exit();
         }
         $transactionReference = $response['transactionReference'];
@@ -99,7 +99,14 @@ class Google extends Controller
 
 
         // 通知厂商
-        $reponse = $this->tradeModel->noticeTo($trade, $trade['trade_no']);
+        $response = $this->tradeModel->noticeTo($trade, $trade['trade_no']);
+
+
+        // 输出
+        if (!$response) {
+            $this->response->setJsonContent(['code' => 1, 'msg' => 'notice to CP failed'])->send();
+            exit();
+        }
 
 
         // 沙箱模式
@@ -107,12 +114,6 @@ class Google extends Controller
             $this->tradeModel->updateTradeStatus($trade['transaction'], 'sandbox');
         }
 
-
-        // 输出
-        if (!$reponse) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => 'notice to CP failed'])->send();
-            exit();
-        }
 
         $this->response->setJsonContent(['code' => 0, 'msg' => 'success'])->send();
         exit();
