@@ -32,6 +32,10 @@ class Google extends Controller
         if (!$user_id) {
             $jwt = $this->request->get('access_token', 'string');
             $account = $this->tradeModel->verifyAccessToken($jwt);
+            if (!$account) {
+                $this->response->setJsonContent(['code' => 1, 'msg' => 'access_token error'])->send();
+                exit();
+            }
             $user_id = $account['open_id'];
         }
         if (!$app_id || !$user_id) {
