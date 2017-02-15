@@ -118,7 +118,7 @@ class Trade extends Model
 
         // 创建订单
         $trade = array(
-            "transaction" => $tradeData['transaction'],
+            "transaction" => isset($tradeData['transaction']) ? $tradeData['transaction'] : $this->createTransaction($tradeData['user_id']),
             "app_id"      => $tradeData['app_id'],
             "user_id"     => $tradeData['user_id'],
             "amount"      => $data['price'],

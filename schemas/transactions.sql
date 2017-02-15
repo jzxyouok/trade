@@ -99,7 +99,7 @@ CREATE TABLE `transactions` (
   `amount_usd` decimal(10,2) unsigned DEFAULT '0.00' COMMENT '美元',
   `status` enum('pending','closed','failed','refund','paid','complete','sandbox') DEFAULT 'pending' COMMENT '支付状态',
   `gateway` varchar(16) DEFAULT NULL COMMENT '支付网关',
-  `trade_no` varchar(32) DEFAULT NULL COMMENT '网关订单号',
+  `trade_no` varchar(40) DEFAULT NULL COMMENT '网关订单号',
   `product_id` varchar(60) DEFAULT '' COMMENT '产品ID',
   `custom` varchar(64) DEFAULT '' COMMENT '自定义',
   `ip` varchar(15) DEFAULT '' COMMENT 'IP',

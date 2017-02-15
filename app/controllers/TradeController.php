@@ -3,16 +3,14 @@
 
 namespace MyApp\Controllers;
 
+
 use MyApp\Models\Trade;
 use MyApp\Models\Utils;
 use MyApp\Services\Services;
 use Phalcon\Mvc\Dispatcher;
 use Symfony\Component\Yaml\Yaml;
 use Xxtime\PayTime\PayTime;
-use Xxtime\Util;
-use Redis;
 use Phalcon\Logger\Adapter\File as FileLogger;
-
 
 class TradeController extends ControllerBase
 {
@@ -181,26 +179,12 @@ class TradeController extends ControllerBase
 
 
     /**
-     * 获取序列号
-     * @return int
-     */
-    private function getSequence()
-    {
-        global $config;
-        $redis = new Redis();
-        $redis->connect($config->redis->host, $config->redis->port);
-        $redis->select(1);
-        return $redis->incr('sequence');
-    }
-
-
-    /**
      * 整理参数
      */
     private function initParams()
     {
         $user_id = $this->request->get('user_id', 'alphanum');
-        $this->_order['transaction'] = Util::createTransaction($this->getSequence(), $user_id);
+        $this->_order['transaction'] = $this->tradeModel->createTransaction($user_id);
 
         // 重要参数
         $this->_order['app_id'] = $this->request->get('app_id', 'alphanum');
