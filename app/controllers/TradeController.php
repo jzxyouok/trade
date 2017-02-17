@@ -134,7 +134,7 @@ class TradeController extends ControllerBase
             }
 
             // PayTime
-            $payTime = new PayTime(ucfirst($gateway) . '_Wap');
+            $payTime = new PayTime(ucfirst($gateway));
             $payTime->setOptions($this->tradeModel->getFullPath($config[$gateway]));
             $payTime->purchase([
                 'transactionId' => $result['transaction'],
