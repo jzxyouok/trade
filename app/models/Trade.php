@@ -299,16 +299,27 @@ class Trade extends Model
      */
     public function getProducts($app_id = 0, $gateway = '')
     {
-        $sql = "SELECT id,name,product_id,price,currency,coin,remark,image FROM `products` WHERE status=1 AND app_id=:app_id ";
+        $sql = "SELECT id,name,product_id,price,currency,coin,remark,image FROM `products` WHERE status=1 AND app_id=:app_id";
         $bind = array('app_id' => $app_id);
         if ($gateway) {
-            $sql .= "AND gateway=:gateway";
+            $sql .= " AND gateway=:gateway";
             $bind['gateway'] = $gateway;
         }
-        $sql .= "ORDER BY sort DESC, price";
+        $sql .= " ORDER BY sort DESC, price";
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
-        return $query->fetchAll();
+        $result = $query->fetchAll();
+
+        // 去掉渠道查询
+        if (!$result) {
+            $sql = "SELECT id,name,product_id,price,currency,coin,remark,image FROM `products` WHERE status=1 AND app_id=:app_id AND gateway='' ORDER BY sort DESC, price";
+            $bind = array('app_id' => $app_id);
+            $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+            $query->setFetchMode(Db::FETCH_ASSOC);
+            $result = $query->fetchAll();
+        }
+
+        return $result;
     }
 
 

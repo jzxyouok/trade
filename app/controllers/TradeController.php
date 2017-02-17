@@ -15,7 +15,7 @@ use Phalcon\Logger\Adapter\File as FileLogger;
 class TradeController extends ControllerBase
 {
 
-    private $_order;
+    private $_trade;
 
 
     private $tradeModel;
@@ -114,11 +114,11 @@ class TradeController extends ControllerBase
 
 
         // 直接储值
-        if ($this->_order['gateway'] && $this->_order['product_id']) {
+        if ($this->_trade['gateway'] && $this->_trade['product_id']) {
 
             $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
 
-            $gateway = $this->_order['gateway'];
+            $gateway = $this->_trade['gateway'];
 
             // 检查配置
             if (!isset($config[$gateway])) {
@@ -127,7 +127,7 @@ class TradeController extends ControllerBase
             }
 
             // 创建订单
-            $result = $this->tradeModel->createTrade($this->_order);
+            $result = $this->tradeModel->createTrade($this->_trade);
             if (!$result) {
                 $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
                 exit();
@@ -141,7 +141,7 @@ class TradeController extends ControllerBase
                 'amount'        => $result['amount'],
                 'currency'      => $result['currency'],
                 'productId'     => $result['product_id'],
-                'productDesc'   => $this->_order['subject'] ? urlencode($this->_order['subject']) : $result['product_id']
+                'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id']
             ]);
             $payTime->send();
             exit();
@@ -149,13 +149,13 @@ class TradeController extends ControllerBase
 
 
         // tips
-        $app = $this->tradeModel->getAppConfig($this->_order['app_id']);
+        $app = $this->tradeModel->getAppConfig($this->_trade['app_id']);
         $this->view->tips = isset($app['trade_tip']) ? $app['trade_tip'] : '';
 
 
         // 选择网关
-        if (!$this->_order['gateway']) {
-            $this->view->gateways = $this->tradeModel->getGateways($this->_order['app_id']);
+        if (!$this->_trade['gateway']) {
+            $this->view->gateways = $this->tradeModel->getGateways($this->_trade['app_id']);
             if (!$this->view->gateways) {
                 exit('error, no gateway');
             }
@@ -165,7 +165,7 @@ class TradeController extends ControllerBase
 
 
         // 产品选择
-        $this->view->products = $this->tradeModel->getProducts($this->_order['app_id']);
+        $this->view->products = $this->tradeModel->getProducts($this->_trade['app_id'], $this->_trade['gateway']);
         $this->view->pick("trade/standard");
     }
 
@@ -178,17 +178,19 @@ class TradeController extends ControllerBase
         // 检查网关
         $gateway = $this->request->get('gateway');
         if (!$gateway) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => 'Invalid Param [gateway]'])->send();
+            $this->response->setJsonContent(['code' => 1, 'msg' => 'invalid argv [gateway]'])->send();
             exit();
         }
 
         $this->initParams();
-        $result = $this->tradeModel->createTrade($this->_order);
+
+        $result = $this->tradeModel->createTrade($this->_trade);
         if (!$result) {
             $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
             exit();
         }
-        Services::pay($gateway)->make($result);
+
+        // TODO :: 未完待续
     }
 
 
@@ -197,34 +199,34 @@ class TradeController extends ControllerBase
      */
     private function initParams()
     {
-        $this->_order['transaction'] = $this->tradeModel->createTransaction($this->_user_id);
+        $this->_trade['transaction'] = $this->tradeModel->createTransaction($this->_user_id);
 
         // 重要参数
-        $this->_order['app_id'] = $this->request->get('app_id', 'alphanum');
-        $this->_order['gateway'] = $this->request->get('gateway', 'alphanum');
+        $this->_trade['app_id'] = $this->request->get('app_id', 'alphanum');
+        $this->_trade['gateway'] = $this->request->get('gateway', 'alphanum');
 
         // 关键参数
-        $this->_order['user_id'] = $this->_user_id;
-        $this->_order['custom'] = $this->request->get('custom', 'string');
-        $this->_order['amount'] = $this->request->get('amount', 'float');
-        $this->_order['currency'] = $this->request->get('currency', 'alphanum');
-        $this->_order['product_id'] = $this->request->get('product_id', 'string');
-        $this->_order['subject'] = $this->request->get('subject', 'string');
+        $this->_trade['user_id'] = $this->_user_id;
+        $this->_trade['custom'] = $this->request->get('custom', 'string');
+        $this->_trade['amount'] = $this->request->get('amount', 'float');
+        $this->_trade['currency'] = $this->request->get('currency', 'alphanum');
+        $this->_trade['product_id'] = $this->request->get('product_id', 'string');
+        $this->_trade['subject'] = $this->request->get('subject', 'string');
 
         // 统计参数
-        $this->_order['uuid'] = $this->request->get('uuid', 'string');
-        $this->_order['adid'] = $this->request->get('adid', 'string');
-        $this->_order['device'] = $this->request->get('device', 'string');
-        $this->_order['channel'] = $this->request->get('channel', 'string');
+        $this->_trade['uuid'] = $this->request->get('uuid', 'string');
+        $this->_trade['adid'] = $this->request->get('adid', 'string');
+        $this->_trade['device'] = $this->request->get('device', 'string');
+        $this->_trade['channel'] = $this->request->get('channel', 'string');
 
-        $this->_order['ip'] = $this->request->getClientAddress();
+        $this->_trade['ip'] = $this->request->getClientAddress();
 
         // 检查参数
-        if (!$this->_order['app_id']) {
+        if (!$this->_trade['app_id']) {
             Utils::outputJSON(array('code' => 1, 'msg' => 'Invalid Param [app_id]'));
         }
-        if (!$this->_order['subject']) {
-            $this->_order['subject'] = $this->_order['product_id'];
+        if (!$this->_trade['subject']) {
+            $this->_trade['subject'] = $this->_trade['product_id'];
         }
     }
 }
