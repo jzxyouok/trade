@@ -157,7 +157,8 @@ class TradeController extends ControllerBase
         if (!$this->_trade['gateway']) {
             $this->view->gateways = $this->tradeModel->getGateways($this->_trade['app_id']);
             if (!$this->view->gateways) {
-                exit('error, no gateway');
+                $this->response->setJsonContent(['code' => 1, 'msg' => 'no gateway'])->send();
+                exit();
             }
             $this->view->pick("trade/gateway");
             return true;

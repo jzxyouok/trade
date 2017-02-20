@@ -47,7 +47,7 @@
                         <div class="am-list-title">{{item['name']}}</div>
                         <div class="am-list-brief">{{item['remark']}}</div>
                     </div>
-                    <div class="am-list-right-brief">{{item['price']}}</div>
+                    <div class="am-list-right-brief">{%if item['price_format'] is defined%}{{item['price_format']}}{%else%}{{item['price']}}{%endif%}</div>
                     <div class="am-checkbox middle">
                         <input type="radio" name="product_id" value="{{item['product_id']}}">
                         <span class="icon-check"></span>
