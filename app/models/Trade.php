@@ -322,7 +322,7 @@ class Trade extends Model
         // 需要php支持国际化与字符编码 --enable-intl
         // http://php.net/manual/zh/book.intl.php
         if (class_exists('NumberFormatter')) {
-            $formatter = new \NumberFormatter("cn-US", \NumberFormatter::CURRENCY);
+            $formatter = new \NumberFormatter("zh-CN", \NumberFormatter::CURRENCY);
             foreach ($result as $key => $value) {
                 $result[$key]['price_format'] = $formatter->formatCurrency($value['price'], $value['currency']);
             }
