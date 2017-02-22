@@ -1,0 +1,28 @@
+google:
+    default     :
+
+alipay:
+    app_id      : 123456
+    return_url  : https://hosts/return/alipay
+    notify_url  : https://hosts/notify/alipay
+    private_key : app/config/files/alipay_private_key.pem
+    public_key  : app/config/files/alipay_public_key.pem
+
+paypal:
+    # cmd=_xclick
+    auth_id     : auth_string
+    email       : email@host.com
+
+    # cmd=_express-checkout Omnipay Express
+    username    :
+    password    :
+    sign        :
+
+    return_url  :
+    cancel_url  :
+    notify_url  :
+
+paymentwall:
+    100:
+       app_id   :
+       app_key  :

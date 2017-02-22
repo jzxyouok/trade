@@ -387,7 +387,7 @@ class Trade extends Model
      */
     public function getFullPath($config = [])
     {
-        $keyWord = ['privateKey', 'publicKey'];
+        $keyWord = ['private_key', 'public_key'];
         foreach ($keyWord as $word) {
             if (array_key_exists($word, $config) && strpos($config[$word], '/') !== 0) {
                 $config[$word] = BASE_DIR . '/' . $config[$word];
