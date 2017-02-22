@@ -34,7 +34,7 @@ $di->set('router', function () {
 
 $di->set('crypt', function () use ($di) {
     $crypt = new Crypt();
-    $crypt->setKey($di['config']->setting->cryptKey);
+    $crypt->setKey($di['config']->setting->secret_key);
     return $crypt;
 }, true);
 
@@ -71,7 +71,7 @@ $di->set('modelsMetadata', function () {
 
 // link https://docs.phalconphp.com/zh/latest/reference/cache.html
 $di->set('modelsCache', function () use ($di) {
-    $frontCache = new FrontData(array("lifetime" => $di['config']->setting->cacheTime));
+    $frontCache = new FrontData(array("lifetime" => $di['config']->setting->cache_time));
     // Redis Cache
     if (isset($di['config']->redis)) {
         $cache = new BackRedis($frontCache, array(
@@ -100,7 +100,7 @@ $di->set('session', function () {
 $di->set('dispatcher', function () use ($di) {
     $dispatcher = new Dispatcher();
     $dispatcher->setDefaultNamespace('MyApp\Controllers');
-    if ($di['config']->setting->securityPlugin) {
+    if ($di['config']->setting->security_plugin) {
         $di['eventsManager']->attach('dispatch', new SecurityPlugin);
         $dispatcher->setEventsManager($di['eventsManager']);
     }
@@ -152,7 +152,7 @@ $di->set('dbLog', function () use ($di) {
 // https://docs.phalconphp.com/zh/latest/reference/dispatching.html#dispatch-loop-events
 $di['eventsManager']->attach('db', function ($event, $connection) use ($di) {
     if ($event->getType() == 'beforeQuery') {
-        if ($di['config']->setting->recordSql) {
+        if ($di['config']->setting->sql_log) {
             $logger = new FileLogger(APP_DIR . '/logs/' . "logsSql.log");
             $logger->log($connection->getSQLStatement());
         }

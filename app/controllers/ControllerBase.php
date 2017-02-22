@@ -37,7 +37,7 @@ class ControllerBase extends Controller
 
 
         // record request
-        if ($this->config->setting->requestLog) {
+        if ($this->config->setting->request_log) {
             if (isset($_REQUEST['_url'])) {
                 $_url = $_REQUEST['_url'];
                 unset($_REQUEST['_url']);
@@ -51,7 +51,7 @@ class ControllerBase extends Controller
 
 
         // check auth
-        if ($this->config->setting->securityPlugin) {
+        if ($this->config->setting->security_plugin) {
             if (!$this->_user_id || !$this->session->get('isLogin')) {
                 header('Location:/login');
                 exit;

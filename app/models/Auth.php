@@ -21,13 +21,10 @@ use Phalcon\Security\Random;
 class Auth extends Model
 {
 
-    private $dbConnection;
-
 
     public function initialize()
     {
         $this->setConnectionService('dbBackend');
-        // $this->dbConnection = DI::getDefault()->get('dbBackend');
     }
 
 
@@ -163,16 +160,16 @@ class Auth extends Model
             'time'     => (new \DateTime('now', new \DateTimeZone('Asia/Shanghai')))->format('H点i分'),
             'location' => $local
         ];
-        include APP_DIR . '/plugins/alidayu/TopSdk.php';
+        include APP_DIR . '/plugins/aliyun/alidayu/TopSdk.php';
         $c = new \TopClient;
-        $c->appkey = $config->sms->appID;
-        $c->secretKey = $config->sms->appKey;
+        $c->appkey = $config->sms->app_id;
+        $c->secretKey = $config->sms->app_key;
         $req = new \AlibabaAliqinFcSmsNumSendRequest;
         $req->setSmsType("normal");
-        $req->setSmsFreeSignName($config->sms->signName);
+        $req->setSmsFreeSignName($config->sms->sign);
         $req->setSmsParam(json_encode($params));
         $req->setRecNum($userData['phone']);
-        $req->setSmsTemplateCode($config->sms->tempSafety);
+        $req->setSmsTemplateCode($config->sms->tmp_safety);
         $c->execute($req);
     }
 

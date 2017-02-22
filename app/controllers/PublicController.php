@@ -22,13 +22,13 @@ class PublicController extends Controller
         if (!$ticket) {
             // TODO :: https 协议
             $callback = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            $LoginUrl = $this->config->sso->BaseUrl . '?redirect=' . urlencode($callback);
+            $LoginUrl = $this->config->sso->base_url . '?redirect=' . urlencode($callback);
             header('Location:' . $LoginUrl);
             exit();
         }
 
         // 验证ticket
-        $verifyUrl = $this->config->sso->BaseUrl . '/verify?ticket=' . $ticket;
+        $verifyUrl = $this->config->sso->base_url . '/verify?ticket=' . $ticket;
         $result = file_get_contents($verifyUrl);
         $result = json_decode($result, true);
 
@@ -38,7 +38,7 @@ class PublicController extends Controller
 
 
         // TODO::拿Ticket换取资源 增加APPKEY
-        $resourceUrl = $this->config->sso->BaseUrl . '/resources?app=' . $this->config->sso->appId . '&ticket=' . $ticket;
+        $resourceUrl = $this->config->sso->base_url . '/resources?app=' . $this->config->sso->app_id . '&ticket=' . $ticket;
         $resources = json_decode(file_get_contents($resourceUrl), true);
         if ($resources['code'] != 0) {
             Utils::tips('warning', 'Error When Get Resources');

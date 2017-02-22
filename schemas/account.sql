@@ -33,7 +33,7 @@ CREATE TABLE `accounts` (
   `status` tinyint(3) unsigned DEFAULT '1',
   `secret_key` varchar(32) DEFAULT '',
   `gender` tinyint(3) unsigned DEFAULT '0',
-  `phone` varchar(32) DEFAULT '',
+  `mobile` varchar(32) DEFAULT '',
   `photo` varchar(512) DEFAULT '',
   `birthday` date DEFAULT '0000-01-01',
   `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,

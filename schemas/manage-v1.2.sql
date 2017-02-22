@@ -161,7 +161,7 @@ CREATE TABLE `users` (
   `password` varchar(225) DEFAULT '',
   `name` varchar(64) DEFAULT '',
   `status` tinyint(3) DEFAULT '1',
-  `phone` varchar(20) DEFAULT '',
+  `mobile` varchar(20) DEFAULT '',
   `secret_key` varchar(64) DEFAULT '',
   `create_time` datetime DEFAULT '0000-01-01 00:00:00',
   `update_time` datetime DEFAULT '0000-01-01 00:00:00',
@@ -172,7 +172,7 @@ CREATE TABLE `users` (
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 
-INSERT INTO `users` (`id`, `username`, `password`, `name`, `status`, `phone`, `secret_key`, `create_time`, `update_time`)
+INSERT INTO `users` (`id`, `username`, `password`, `name`, `status`, `mobile`, `secret_key`, `create_time`, `update_time`)
 VALUES
 	(10000,'joe@xxtime.com','','Joe Chu',1,'','','0000-01-01 00:00:00','0000-01-01 00:00:00'),
 	(10001,'demo@xxtime.com','','Demo',1,'','','0000-01-01 00:00:00','0000-01-01 00:00:00');

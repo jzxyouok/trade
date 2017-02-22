@@ -27,7 +27,7 @@ class Trade extends Model
      */
     public function verifyAccessToken($jwt = '')
     {
-        $key = DI::getDefault()->get('config')->setting->cryptKey;
+        $key = DI::getDefault()->get('config')->setting->secret_key;
         try {
             JWT::$leeway = 300; // 允许误差秒数
             $decoded = JWT::decode($jwt, $key, array('HS256'));

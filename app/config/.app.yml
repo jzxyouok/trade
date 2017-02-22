@@ -1,11 +1,11 @@
 setting:
     sandbox         : false
-    securityPlugin  : 0
-    requestLog      : false
-    recordSql       : false
+    security_plugin : 0
+    request_log     : false
+    sql_log         : false
     timezone        : UTC
-    cacheTime       : 600
-    cryptKey        : xxxxxxxxxxxxxxxx
+    cache_time      : 600
+    secret_key      : xxxxxxxxxxxxxxxx
 
 db_data:
     adapter     : Mysql
@@ -48,5 +48,5 @@ mq:
     vhost       :
 
 sso:
-    BaseUrl     : http://www.example.com/api/sso/
-    appId       : 100
+    base_url    : http://www.example.com/api/sso/
+    app_id      : 100

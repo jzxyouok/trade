@@ -75,7 +75,7 @@ class SecurityPlugin extends Plugin
 
 
         // 资源
-        if ($this->config->setting->securityPlugin == 1) {
+        if ($this->config->setting->security_plugin == 1) {
             // 使用自己的权限控制
             $authModel = new Auth();
             $privateResources = $authModel->getAclResource($user_id, $app);
