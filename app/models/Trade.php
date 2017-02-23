@@ -363,17 +363,21 @@ class Trade extends Model
             return false;
         }
         $ways = [
-            'alipay' => [
+            'alipay'      => [
                 'title'  => '支付宝',
                 'remark' => '推荐有支付宝账号的用户使用',
             ],
-            'weixin' => [
+            'weixin'      => [
                 'title'  => '微信支付',
                 'remark' => '',
             ],
-            'paypal' => [
+            'paypal'      => [
                 'title'  => 'PayPal',
                 'remark' => '',
+            ],
+            'paymentwall' => [
+                'title'  => 'PaymentWall',
+                'remark' => '更多支付方式',
             ],
         ];
         return array_intersect_key($ways, array_flip(explode(',', $data['trade_method'])));
