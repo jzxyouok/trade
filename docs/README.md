@@ -1,5 +1,5 @@
-####  说明
-user_id等同于账号系统里出现的open_id
+####  支付接口文档
+:exclamation: user_id等同于账号系统里出现的open_id :exclamation:
 
 #### 网页订单接口 /trade
 跳转到WEB支付页面
@@ -53,6 +53,12 @@ channel     | varchar(32)  | 否 | 渠道信息, 如 baidu_ad
 *  Google Play:  
 /notify/google?app_id=100&user_id=100001&custom=201-800123&receipt=xxxx&sign=xxxx  
 /notify/google?app_id=100&access_token=xxxx&custom=201-800123&receipt=xxxx&sign=xxxx
+
+*  PaymentWall:  
+/{APPID}/notify/paymentwall
+
+*  支付宝:  
+/notify/alipay
 
 参数说明:  
 
