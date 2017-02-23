@@ -18,7 +18,10 @@ class Google extends Controller
     private $_isSandbox = false;
 
 
-    // 交易通知
+    /**
+     * 交易通知
+     * Google 测试账号不传递订单ID
+     */
     public function notify()
     {
         $this->tradeModel = new Trade();

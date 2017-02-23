@@ -18,10 +18,10 @@ class TradeController extends ControllerBase
     private $_trade;
 
 
+    private $_gateway;
+
+
     private $tradeModel;
-
-
-    public $_user_id;
 
 
     public function initialize()
@@ -53,20 +53,20 @@ class TradeController extends ControllerBase
 
 
         // 网关
-        $gateway = trim($this->dispatcher->getParam('param'), '/');
+        $this->_gateway = trim($this->dispatcher->getParam('param'), '/');
 
 
-        // Apple && Google
-        if (in_array($gateway, ['apple', 'google'])) {
-            $service = Services::pay($gateway);
+        // 苹果谷歌单独处理
+        if (in_array($this->_gateway, ['apple', 'google'])) {
+            $service = Services::pay($this->_gateway);
             $service->notify();
             exit();
         }
 
 
-        $payTime = new PayTime(ucfirst($gateway));
-        $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
-        $payTime->setOptions($this->tradeModel->getFullPath($config[$gateway]));
+        $payTime = new PayTime(ucfirst($this->_gateway));
+        $options = $this->getConfigOptions();
+        $payTime->setOptions($options);
         $response = $payTime->notify();
 
 
@@ -78,6 +78,7 @@ class TradeController extends ControllerBase
             exit('failed');
         }
 
+        // 获取订单信息
         $trade = $this->tradeModel->getTrade($transactionId);
         if (!$trade) {
             $logger->error($transactionId . '|' . 'no trade info');
@@ -87,21 +88,31 @@ class TradeController extends ControllerBase
         $logger->close();
 
 
+        // 检查订单状态
         if ($trade['status'] == 'complete') {
             exit('success');
         }
-
-
         if (!in_array($trade['status'], ['pending', 'paid'])) {
             exit($trade['status']);
         }
 
 
-        $response = $this->tradeModel->noticeTo($trade, $response['transactionReference']);
-        // TODO :: 多种充值网关响应支持
-        if ($response) {
+        // 通知CP-SERVER
+        $result = $this->tradeModel->noticeTo($trade, $response['transactionReference']);
+
+
+        // 输出
+        if ($result) {
+            // 检查沙箱
+            if (!empty($response['sandbox']) && $response['sandbox'] === true) {
+                $this->tradeModel->updateTradeStatus($transactionId, 'sandbox');
+            }
+            $payTime->success();
+
             exit('success');
         }
+
+        exit('notice to cp failed');
     }
 
 
@@ -114,17 +125,7 @@ class TradeController extends ControllerBase
 
 
         // 直接储值
-        if ($this->_trade['gateway'] && $this->_trade['product_id']) {
-
-            $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
-
-            $gateway = $this->_trade['gateway'];
-
-            // 检查配置
-            if (!isset($config[$gateway])) {
-                $this->response->setJsonContent(['code' => 1, 'msg' => 'no config about the gateway'])->send();
-                exit();
-            }
+        if ($this->_gateway && $this->_trade['product_id']) {
 
             // 创建订单
             $result = $this->tradeModel->createTrade($this->_trade);
@@ -134,8 +135,9 @@ class TradeController extends ControllerBase
             }
 
             // PayTime
-            $payTime = new PayTime(ucfirst($gateway));
-            $payTime->setOptions($this->tradeModel->getFullPath($config[$gateway]));
+            $options = $this->getConfigOptions();
+            $payTime = new PayTime(ucfirst($this->_gateway));
+            $payTime->setOptions($options);
             $payTime->purchase([
                 'transactionId' => $result['transaction'],
                 'amount'        => $result['amount'],
@@ -149,13 +151,13 @@ class TradeController extends ControllerBase
 
 
         // tips
-        $app = $this->tradeModel->getAppConfig($this->_trade['app_id']);
+        $app = $this->tradeModel->getAppConfig($this->_app);
         $this->view->tips = isset($app['trade_tip']) ? $app['trade_tip'] : '';
 
 
         // 选择网关
-        if (!$this->_trade['gateway']) {
-            $this->view->gateways = $this->tradeModel->getGateways($this->_trade['app_id']);
+        if (!$this->_gateway) {
+            $this->view->gateways = $this->tradeModel->getGateways($this->_app);
             if (!$this->view->gateways) {
                 $this->response->setJsonContent(['code' => 1, 'msg' => 'no gateway'])->send();
                 exit();
@@ -166,7 +168,7 @@ class TradeController extends ControllerBase
 
 
         // 产品选择
-        $this->view->products = $this->tradeModel->getProducts($this->_trade['app_id'], $this->_trade['gateway']);
+        $this->view->products = $this->tradeModel->getProducts($this->_app, $this->_gateway);
         $this->view->pick("trade/standard");
     }
 
@@ -203,8 +205,8 @@ class TradeController extends ControllerBase
         $this->_trade['transaction'] = $this->tradeModel->createTransaction($this->_user_id);
 
         // 重要参数
-        $this->_trade['app_id'] = $this->request->get('app_id', 'alphanum');
-        $this->_trade['gateway'] = $this->request->get('gateway', 'alphanum');
+        $this->_trade['app_id'] = $this->_app = $this->request->get('app_id', 'alphanum');
+        $this->_trade['gateway'] = $this->_gateway = $this->request->get('gateway', 'alphanum');
 
         // 关键参数
         $this->_trade['user_id'] = $this->_user_id;
@@ -229,5 +231,28 @@ class TradeController extends ControllerBase
         if (!$this->_trade['subject']) {
             $this->_trade['subject'] = $this->_trade['product_id'];
         }
+    }
+
+
+    /**
+     * 获取配置选项
+     * @return mixed
+     */
+    private function getConfigOptions()
+    {
+        $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
+
+        if (!isset($config[$this->_gateway])) {
+            $this->response->setJsonContent(['code' => 1, 'msg' => 'no config about the gateway'])->send();
+            exit();
+        }
+
+        if (isset($config[$this->_gateway][$this->_app])) {
+            $options = $config[$this->_gateway][$this->_app];
+        } else {
+            $options = $config[$this->_gateway];
+        }
+
+        return $this->tradeModel->getFullPath($options);
     }
 }

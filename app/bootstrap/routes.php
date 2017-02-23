@@ -163,6 +163,16 @@ $router->add(
         'param'      => 1
     )
 );
+$router->add(
+    "/([0-9]+)/notify/:params",
+    array(
+        'namespace'  => 'MyApp\Controllers',
+        'controller' => 'trade',
+        'action'     => 'notify',
+        'app'        => 1,
+        'param'      => 2
+    )
+);
 
 
 return $router;
