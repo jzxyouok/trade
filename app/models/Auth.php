@@ -21,7 +21,6 @@ use Phalcon\Security\Random;
 class Auth extends Model
 {
 
-
     public function initialize()
     {
         $this->setConnectionService('dbBackend');
@@ -29,22 +28,21 @@ class Auth extends Model
 
 
     /**
-     * 获取用户信息
-     * @param string $username
+     * 生成票据Ticket
+     * @param int $user_id
      * @return mixed
      */
-    public function getUser($username = '')
+    public function  createTicket($user_id = 0)
     {
-        if (intval($username) > 0) {
-            $sql = "SELECT * FROM `users` WHERE id=:username";
-        } else {
-            $sql = "SELECT * FROM `users` WHERE username=:username";
-        }
-        $bind = array('username' => $username);
-        $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
-        $query->setFetchMode(Db::FETCH_ASSOC);
-        $data = $query->fetch();
-        return $data;
+        $random = new Random();
+        $ticket = $random->base64Safe(64);
+        $data = [
+            'user_id'     => $user_id,
+            'ticket'      => $ticket,
+            'create_time' => date('Y-m-d H:i:s')
+        ];
+        DI::getDefault()->get('dbBackend')->insertAsDict("tickets", $data);
+        return $ticket;
     }
 
 
@@ -55,7 +53,7 @@ class Auth extends Model
      */
     public function getUserByTicket($ticket = '')
     {
-        $dateTime = date('Y-m-d H:i:s', time() - 60);
+        $dateTime = date('Y-m-d H:i:s', time() - 300);
         $sql = "SELECT u.* FROM `users` u, `tickets` t WHERE u.id=t.user_id AND t.ticket=:ticket AND t.create_time>'$dateTime'";
         $bind = array('ticket' => $ticket);
         // TODO :: 此处如使用$this->dbConnection时,外部程序使用file_get_contents(VerifyURL)调用时报错,直接访问VerifyURL没问题
@@ -67,13 +65,101 @@ class Auth extends Model
 
 
     /**
-     * 插入登录日志
-     * @param array $data
+     * 获取用户信息
+     * @param string $username
+     * @return mixed
      */
-    public function logsLogin($data = [])
+    public function getUser($username = '')
     {
-        $data['create_time'] = date('Y-m-d H:i:s');
-        DI::getDefault()->get('dbBackend')->insertAsDict("logs_login", $data);
+        if (intval($username) > 0) {
+            $sql = "SELECT id,username,password,name,status,mobile,secret_key,avatar,create_time,update_time FROM `users` WHERE id=:username";
+        } else {
+            $sql = "SELECT id,username,password,name,status,mobile,secret_key,avatar,create_time,update_time FROM `users` WHERE username=:username";
+        }
+        $bind = array('username' => $username);
+        $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        $data = $query->fetch();
+        return $data;
+    }
+
+
+    /**
+     * 获取角色ID
+     * @param int $user_id
+     * @return array
+     */
+    public function getRoleID($user_id = 0)
+    {
+        $sql = "SELECT `role_id` FROM `role_user` WHERE user_id=:user_id";
+        $bind = array('user_id' => $user_id);
+        $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        $data = $query->fetchAll();
+        if (!$data) {
+            return [];
+        }
+        return array_column($data, 'role_id');
+    }
+
+
+    /**
+     * 获取私有资源
+     * @param int $user_id
+     * @param string $app
+     * @return array
+     */
+    public function getResources($user_id = 0, $app = '')
+    {
+        // 超级管理员
+        if ($user_id == 1000) {
+            $sql = "SELECT res.id, res.name, res.resource, res.type, res.parent, res.icon
+                FROM `resources` res
+                WHERE res.status=1 AND res.app=:app
+                ORDER BY res.sort DESC";
+            $bind = array('app' => $app);
+            $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
+            $query->setFetchMode(Db::FETCH_ASSOC);
+            return $query->fetchAll();
+        }
+
+
+        $role_id = $this->getRoleID($user_id);
+        if (!$role_id) {
+            return [];
+        }
+        $role_id = '"' . implode('","', $role_id) . '"';
+        $sql = "SELECT res.id, res.name, res.resource, res.type, res.parent, res.icon
+                FROM `resources` res, `role_resource` rel
+                WHERE rel.resource_id=res.id AND res.status=1 AND rel.role_id IN ($role_id) AND res.app=:app
+                ORDER BY res.sort DESC";
+        $bind = array('app' => $app);
+        $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        return $query->fetchAll();
+    }
+
+
+    /**
+     * 资源格式化为ACL格式
+     * @param array $resource
+     * @return array
+     */
+    public function getAclFormat($resource = [])
+    {
+        $result = [];
+        foreach ($resource as $value) {
+            $resource = explode('/', trim($value['resource'], '/'));
+            if (in_array($resource['0'], array('api', 'admin'))) {
+                $controller = "{$resource['0']}/{$resource['1']}";
+                $action = isset($resource['2']) ? $resource['2'] : 'index';
+            } else {
+                $controller = $resource['0'];
+                $action = isset($resource['1']) ? $resource['1'] : 'index';
+            }
+            $result[$controller][] = $action;
+        }
+        return $result;
     }
 
 
@@ -88,6 +174,17 @@ class Auth extends Model
         $sql = "UPDATE `users` SET `secret_key`=:secret_key WHERE id=:id AND `secret_key`=''";
         $bind = array('id' => $user_id, 'secret_key' => $secret_key);
         return DI::getDefault()->get('dbBackend')->execute($sql, $bind);
+    }
+
+
+    /**
+     * 登录日志
+     * @param array $data
+     */
+    public function loginLog($data = [])
+    {
+        $data['create_time'] = date('Y-m-d H:i:s');
+        DI::getDefault()->get('dbBackend')->insertAsDict("logs_login", $data);
     }
 
 
@@ -122,7 +219,7 @@ class Auth extends Model
         if (!$location) {
             return false;
         }
-        if (!$userData['phone']) {
+        if (!$userData['mobile']) {
             return false;
         }
 
@@ -168,112 +265,9 @@ class Auth extends Model
         $req->setSmsType("normal");
         $req->setSmsFreeSignName($config->sms->sign);
         $req->setSmsParam(json_encode($params));
-        $req->setRecNum($userData['phone']);
+        $req->setRecNum($userData['mobile']);
         $req->setSmsTemplateCode($config->sms->tmp_safety);
         $c->execute($req);
-    }
-
-
-    /**
-     * 生成票据Ticket
-     * @param int $user_id
-     * @return mixed
-     */
-    public function  createTicket($user_id = 0)
-    {
-        $random = new Random();
-        $ticket = $random->base64Safe(64);
-        $data = [
-            'user_id'     => $user_id,
-            'ticket'      => $ticket,
-            'create_time' => date('Y-m-d H:i:s')
-        ];
-        DI::getDefault()->get('dbBackend')->insertAsDict("tickets", $data);
-        return $ticket;
-    }
-
-
-    /**
-     * 获取角色ID
-     * @param int $user_id
-     * @return array
-     */
-    public function getRoleID($user_id = 0)
-    {
-        $sql = "SELECT `role_id` FROM `user_role` WHERE user_id=:user_id";
-        $bind = array('user_id' => $user_id);
-        $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
-        $query->setFetchMode(Db::FETCH_ASSOC);
-        $data = $query->fetchAll();
-        if (!$data) {
-            return [];
-        }
-        return array_column($data, 'role_id');
-    }
-
-
-    /**
-     * 获取私有资源
-     * @param int $user_id
-     * @param string $app
-     * @return array
-     */
-    public function getResources($user_id = 0, $app = '')
-    {
-        // 超级管理员
-        if ($user_id == 10000) {
-            $sql = "SELECT res.id, res.name, res.resource, res.type, res.parent, res.icon
-                FROM `resources` res
-                WHERE res.status=1 AND res.app=:app
-                ORDER BY res.sort DESC";
-            $bind = array('app' => $app);
-            $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
-            $query->setFetchMode(Db::FETCH_ASSOC);
-            return $query->fetchAll();
-        }
-
-
-        $role_id = $this->getRoleID($user_id);
-        if (!$role_id) {
-            return [];
-        }
-        $role_id = '"' . implode('","', $role_id) . '"';
-        $sql = "SELECT res.id, res.name, res.resource, res.type, res.parent, res.icon
-                FROM `resources` res, `role_resource` rel
-                WHERE rel.resource_id=res.id AND res.status=1 AND rel.role_id IN ($role_id) AND res.app=:app
-                ORDER BY res.sort DESC";
-        $bind = array('app' => $app);
-        $query = DI::getDefault()->get('dbBackend')->query($sql, $bind);
-        $query->setFetchMode(Db::FETCH_ASSOC);
-        return $query->fetchAll();
-    }
-
-
-    /**
-     * 获取私有资源acl格式
-     * @param int $user_id
-     * @param string $app
-     * @return array
-     */
-    public function getAclResource($user_id = 0, $app = '')
-    {
-        $data = $this->getResources($user_id, $app);
-        if (!$data) {
-            return [];
-        }
-        $result = [];
-        foreach ($data as $value) {
-            $resource = explode('/', trim($value['resource'], '/'));
-            if (in_array($resource['0'], array('api', 'admin'))) {
-                $controller = "{$resource['0']}/{$resource['1']}";
-                $action = isset($resource['2']) ? $resource['2'] : 'index';
-            } else {
-                $controller = $resource['0'];
-                $action = isset($resource['1']) ? $resource['1'] : 'index';
-            }
-            $result[$controller][] = $action;
-        }
-        return $result;
     }
 
 }

@@ -52,7 +52,7 @@ class ControllerBase extends Controller
 
         // check auth
         if ($this->config->setting->security_plugin) {
-            if (!$this->_user_id || !$this->session->get('isLogin')) {
+            if (!$this->_user_id || !$this->session->get('is_login')) {
                 header('Location:/login');
                 exit;
             }

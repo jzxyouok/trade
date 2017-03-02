@@ -6,6 +6,7 @@ setting:
     timezone        : UTC
     cache_time      : 600
     secret_key      : xxxxxxxxxxxxxxxx
+    app_id          :
 
 db_data:
     adapter     : Mysql
@@ -49,4 +50,3 @@ mq:
 
 sso:
     base_url    : http://www.example.com/api/sso/
-    app_id      : 100

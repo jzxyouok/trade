@@ -6,8 +6,8 @@
 # https://github.com/sequelpro/sequelpro
 #
 # Host: 127.0.0.1 (MySQL 5.7.9)
-# Database: phalcon_manage
-# Generation Time: 2017-01-03 10:42:49 +0000
+# Database: phalcon_boss
+# Generation Time: 2017-03-01 03:24:00 +0000
 # ************************************************************
 
 
@@ -50,7 +50,7 @@ CREATE TABLE `resources` (
   `app` varchar(32) DEFAULT '',
   `name` varchar(32) DEFAULT '',
   `resource` varchar(64) DEFAULT '',
-  `type` enum('menu','node') DEFAULT NULL,
+  `type` enum('menu','node','link') DEFAULT 'node',
   `parent` int(11) DEFAULT '0',
   `sort` int(11) DEFAULT '0',
   `status` tinyint(3) DEFAULT '1',
@@ -88,6 +88,22 @@ CREATE TABLE `role_resource` (
   KEY `role_id` (`role_id`),
   KEY `resource_id` (`resource_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 角色&资源';
+
+
+
+# Dump of table role_user
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `role_user`;
+
+CREATE TABLE `role_user` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `role_id` int(11) DEFAULT '0',
+  `user_id` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `role_id` (`role_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 用户&角色';
 
 
 
@@ -134,22 +150,6 @@ CREATE TABLE `tickets` (
 
 
 
-# Dump of table user_role
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `user_role`;
-
-CREATE TABLE `user_role` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) DEFAULT '0',
-  `role_id` int(11) DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `role_id` (`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 用户&角色';
-
-
-
 # Dump of table users
 # ------------------------------------------------------------
 
@@ -163,19 +163,19 @@ CREATE TABLE `users` (
   `status` tinyint(3) DEFAULT '1',
   `mobile` varchar(20) DEFAULT '',
   `secret_key` varchar(64) DEFAULT '',
+  `avatar` varchar(512) DEFAULT '',
   `create_time` datetime DEFAULT '0000-01-01 00:00:00',
   `update_time` datetime DEFAULT '0000-01-01 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 用户';
+) ENGINE=InnoDB AUTO_INCREMENT=1001 DEFAULT CHARSET=utf8mb4 COMMENT='权限部分 - 用户';
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 
-INSERT INTO `users` (`id`, `username`, `password`, `name`, `status`, `mobile`, `secret_key`, `create_time`, `update_time`)
+INSERT INTO `users` (`id`, `username`, `password`, `name`, `status`, `mobile`, `secret_key`, `avatar`, `create_time`, `update_time`)
 VALUES
-	(10000,'joe@xxtime.com','','Joe Chu',1,'','','0000-01-01 00:00:00','0000-01-01 00:00:00'),
-	(10001,'demo@xxtime.com','','Demo',1,'','','0000-01-01 00:00:00','0000-01-01 00:00:00');
+	(1,'joe@xxtime.com','','',1,'','','','0000-01-01 00:00:00','0000-01-01 00:00:00');
 
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;

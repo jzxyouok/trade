@@ -3,9 +3,9 @@
 
 namespace MyApp\Controllers;
 
+
 use MyApp\Models\Utils;
 use Phalcon\Mvc\Controller;
-
 
 class PublicController extends Controller
 {
@@ -19,17 +19,25 @@ class PublicController extends Controller
     public function loginAction()
     {
         $ticket = $this->request->get('ticket', 'string');
+
+        // BASE URL
+        if ($this->config->setting->security_plugin == 1) {
+            $base_url = 'http://' . $_SERVER['HTTP_HOST'] . '/api/sso';
+        } else {
+            $base_url = $this->config->sso->base_url;
+        }
+
         if (!$ticket) {
             // TODO :: https 协议
             $callback = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            $LoginUrl = $this->config->sso->base_url . '?redirect=' . urlencode($callback);
-            header('Location:' . $LoginUrl);
+            $login_url = $base_url . '?redirect=' . urlencode($callback);
+            header('Location:' . $login_url);
             exit();
         }
 
         // 验证ticket
-        $verifyUrl = $this->config->sso->base_url . '/verify?ticket=' . $ticket;
-        $result = file_get_contents($verifyUrl);
+        $verify_url = $base_url . '/verify/' . $ticket;
+        $result = file_get_contents($verify_url);
         $result = json_decode($result, true);
 
         if ($result['code'] != 0) {
@@ -38,19 +46,21 @@ class PublicController extends Controller
 
 
         // TODO::拿Ticket换取资源 增加APPKEY
-        $resourceUrl = $this->config->sso->base_url . '/resources?app=' . $this->config->sso->app_id . '&ticket=' . $ticket;
-        $resources = json_decode(file_get_contents($resourceUrl), true);
+        $resource_url = $base_url . '/resources?app=' . $this->config->setting->app_id . '&ticket=' . $ticket;
+        $resources = json_decode(file_get_contents($resource_url), true);
         if ($resources['code'] != 0) {
             Utils::tips('warning', 'Error When Get Resources');
         } else {
-            $this->session->set('resources', $resources['data']);
+            unset($resources['code'], $resources['msg']);
+            $this->session->set('resources', $resources);
         }
 
 
         // 设置SESSION
-        $this->session->set('user_id', $result['data']['user_id']);
-        $this->session->set('username', $result['data']['username']);
-        $this->session->set('name', $result['data']['name']);
+        $this->session->set('user_id', $result['user_id']);
+        $this->session->set('username', $result['username']);
+        $this->session->set('name', $result['name']);
+        $this->session->set('avatar', $result['avatar']);
 
 
         header('Location:/');
@@ -97,6 +107,5 @@ class PublicController extends Controller
         $this->view->message = 'Error 400, Exception Occurs';
         $this->view->pick("public/errors");
     }
-
 
 }

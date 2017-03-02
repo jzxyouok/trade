@@ -17,7 +17,6 @@ use MyApp\Models\Auth;
 class SecurityPlugin extends Plugin
 {
 
-
     public function beforeDispatch(Event $event, Dispatcher $dispatcher)
     {
         return $this->checkPermission($event, $dispatcher);
@@ -78,8 +77,8 @@ class SecurityPlugin extends Plugin
         if ($this->config->setting->security_plugin == 1) {
             // 使用自己的权限控制
             $authModel = new Auth();
-            $privateResources = $authModel->getAclResource($user_id, $app);
-            $allResources = $authModel->getAclResource(10000, $app);
+            $privateResources = $authModel->getAclFormat($authModel->getResources($user_id, $app));
+            $allResources = $authModel->getAclFormat($authModel->getResources(1000, $app));
         } else {
             // 使用资源中心的权限控制
             $resources = $this->session->get('resources');
@@ -131,6 +130,7 @@ class SecurityPlugin extends Plugin
         }
 
 
+        // 此处缓存到SESSION
         $this->persistent->acl = $acl;
 
 
@@ -174,6 +174,5 @@ class SecurityPlugin extends Plugin
             return false;
         }
     }
-
 
 }
