@@ -36,6 +36,12 @@ class Utils extends Model
     }
 
 
+    static public function getAvatar($username = '')
+    {
+        return 'https://secure.gravatar.com/avatar/' . md5(strtolower(trim($username))) . '?s=80&d=identicon';
+    }
+
+
     // 把数组转换为树状结构
     public function list2tree($data = array())
     {

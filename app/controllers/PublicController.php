@@ -70,6 +70,7 @@ class PublicController extends Controller
 
     public function logoutAction()
     {
+        $this->persistent->destroy();
         $this->session->destroy();
         Utils::tips('info', 'Logout Page');
     }

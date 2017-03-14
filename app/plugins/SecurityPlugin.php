@@ -86,8 +86,8 @@ class SecurityPlugin extends Plugin
                 header('Location:/login');
                 exit();
             }
-            $privateResources = $resources['aclAllow'];
-            $allResources = $resources['aclAll'];
+            $privateResources = $resources['acl_allow'];
+            $allResources = $resources['acl_all'];
         }
 
 

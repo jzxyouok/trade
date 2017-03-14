@@ -153,6 +153,7 @@ class SsoController extends ControllerBase
 
     public function logoutAction()
     {
+        $this->persistent->destroy();
         $this->session->destroy();
     }
 
@@ -245,7 +246,7 @@ class SsoController extends ControllerBase
 
     public function resourcesAction()
     {
-        $app = $this->request->get('app', 'int');
+        $app = $this->request->get('app', 'string');
         $ticket = $this->request->get('ticket', 'string');
         $user = $this->authModel->getUserByTicket($ticket);
         if (!$user) {
@@ -258,10 +259,10 @@ class SsoController extends ControllerBase
 
 
         // ACL是phalcon的ACL指定格式
-        $acl_resources = $this->authModel->getResources($user['id'], $app);
+        $allow_resources = $this->authModel->getResources($user['id'], $app);
         $result['acl_all'] = $this->authModel->getAclFormat($this->authModel->getResources(1000, $app));
-        $result['acl_allow'] = $this->authModel->getAclFormat($acl_resources);
-        $result['menu_tree'] = $this->utilsModel->list2tree($acl_resources);
+        $result['acl_allow'] = $this->authModel->getAclFormat($allow_resources);
+        $result['menu_tree'] = $this->utilsModel->list2tree($allow_resources);
 
         $this->response->setJsonContent([
                 'code' => 0,
