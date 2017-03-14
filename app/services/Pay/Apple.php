@@ -76,7 +76,6 @@ class Apple extends Controller
                 "product_id"  => $product_id,
                 "custom"      => $custom,
                 "status"      => 'paid',
-                "trade_no"    => $transactionReference,
                 "ip"          => $ipAddress,
                 "uuid"        => '',
                 "adid"        => '',
@@ -84,7 +83,11 @@ class Apple extends Controller
                 "channel"     => '',
                 "create_time" => date('Y-m-d H:i:s') // 不使用SQL自动插入时间，避免时区不统一
             ];
-            $trade = $this->tradeModel->createTrade($trade_data);
+            $more = [
+                'trade_no'   => $transactionReference,
+                'data'       => $this->_receipt,
+            ];
+            $trade = $this->tradeModel->createTrade($trade_data, $more);
         } else {
             if (in_array($trade['status'], ['complete', 'sandbox'])) {
                 $this->response->setJsonContent(['code' => 0, 'msg' => 'success'])->send();
@@ -98,7 +101,7 @@ class Apple extends Controller
 
 
         // 通知厂商
-        $response = $this->tradeModel->noticeTo($trade, $trade['trade_no']);
+        $response = $this->tradeModel->noticeTo($trade, $transactionReference);
 
 
         // 输出

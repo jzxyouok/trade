@@ -50,7 +50,8 @@ class Trade extends Model
      */
     public function getTrade($transaction = '')
     {
-        $sql = "SELECT * FROM `transactions` WHERE transaction=:transaction";
+        $sql = "SELECT id,transaction,app_id,user_id,currency,amount,amount_usd,status,gateway,product_id,custom,ip
+FROM `transactions` WHERE transaction=:transaction";
         $bind = array('transaction' => $transaction);
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
@@ -66,7 +67,12 @@ class Trade extends Model
      */
     public function getTradeByReference($gateway = '', $Reference = '')
     {
-        $sql = "SELECT * FROM `transactions` WHERE gateway=:gateway AND trade_no=:trade_no";
+        $sql = "SELECT tx.id,tx.transaction,tx.app_id,tx.user_id,tx.currency,tx.amount,tx.amount_usd,tx.status,tx.gateway,tx.product_id,tx.custom,`more`.trade_no,`more`.key_string
+FROM `transactions` tx
+RIGHT JOIN `trans_more` `more`
+ON tx.transaction=`more`.trans_id
+WHERE `more`.trade_no=:trade_no AND `more`.gateway=:gateway
+LIMIT 1";
         $bind = array('gateway' => $gateway, 'trade_no' => $Reference);
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
@@ -118,9 +124,10 @@ class Trade extends Model
     /**
      * 创建订单
      * @param array $tradeData
-     * @return bool
+     * @param array $more
+     * @return array|bool
      */
-    public function createTrade($tradeData = [])
+    public function createTrade($tradeData = [], $more = [])
     {
         // 检查产品 TODO:: 卡类支付暂不适用
         if (isset($tradeData['product_id'])) {
@@ -153,7 +160,6 @@ class Trade extends Model
             "product_id"  => $tradeData['product_id'],
             "custom"      => $tradeData['custom'],
             "status"      => isset($tradeData['status']) ? $tradeData['status'] : null,
-            "trade_no"    => isset($tradeData['trade_no']) ? $tradeData['trade_no'] : null,
             "ip"          => $tradeData['ip'],
             "uuid"        => strtoupper($tradeData['uuid']),
             "adid"        => strtoupper($tradeData['adid']),
@@ -161,8 +167,15 @@ class Trade extends Model
             "channel"     => $tradeData['channel'],
             "create_time" => date('Y-m-d H:i:s')    // 不使用SQL自动插入时间，避免时区不统一
         );
-        $result = DI::getDefault()->get('dbData')->insertAsDict("transactions", array_filter($trade));
-        if (!$result) {
+        $more['trans_id'] = $trade['transaction'];
+        $more['gateway'] = $trade['gateway'];
+        try {
+            DI::getDefault()->get('dbData')->begin();
+            DI::getDefault()->get('dbData')->insertAsDict("transactions", array_filter($trade));
+            DI::getDefault()->get('dbData')->insertAsDict("trans_more", array_filter($more));
+            DI::getDefault()->get('dbData')->commit();
+        } catch (Exception $e) {
+            DI::getDefault()->get('dbData')->rollback();
             return false;
         }
         return $trade;
@@ -179,12 +192,22 @@ class Trade extends Model
     {
         // 付款状态
         if ($tradeInfo['status'] == 'pending') {
-            $sql = "UPDATE transactions SET status='paid', trade_no=:transactionReference WHERE transaction=:transaction";
-            $bind = array(
-                'transaction'          => $tradeInfo['transaction'],
-                'transactionReference' => $transactionReference
-            );
-            DI::getDefault()->get('dbData')->execute($sql, $bind);
+            try {
+                DI::getDefault()->get('dbData')->begin();
+
+                $sql = "UPDATE transactions SET status='paid' WHERE transaction=:transaction";
+                $bind = array('transaction' => $tradeInfo['transaction']);
+                DI::getDefault()->get('dbData')->execute($sql, $bind);
+
+                $sql = "UPDATE trans_more SET trade_no=:reference WHERE trans_id=:transaction";
+                $bind = array('reference' => $transactionReference, 'transaction' => $tradeInfo['transaction']);
+                DI::getDefault()->get('dbData')->execute($sql, $bind);
+
+                DI::getDefault()->get('dbData')->commit();
+            } catch (Exception $e) {
+                DI::getDefault()->get('dbData')->rollback();
+                return false;
+            }
         }
 
 

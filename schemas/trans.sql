@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: 2017-03-14 08:41:12
+-- Generation Time: 2017-03-14 09:00:22
 -- 服务器版本： 5.7.9
 -- PHP Version: 5.6.15
 
@@ -112,8 +112,8 @@ CREATE TABLE `trans_more` (
   `id` int(11) UNSIGNED NOT NULL,
   `trans_id` varchar(32) DEFAULT '',
   `gateway` enum('apple','google','alipay','weixin','paypal','paymentwall','mycard','mol','other') DEFAULT 'other',
-  `trade_no` varchar(32) DEFAULT '',
-  `key` varchar(255) DEFAULT '',
+  `trade_no` varchar(32) DEFAULT NULL,
+  `key_string` varchar(255) DEFAULT '',
   `data` text,
   `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -157,7 +157,8 @@ ALTER TABLE `transactions`
 --
 ALTER TABLE `trans_more`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `trade_no` (`trade_no`,`gateway`);
+  ADD UNIQUE KEY `trade_no` (`trade_no`,`gateway`),
+  ADD KEY `trans_id` (`trans_id`);
 
 --
 -- 在导出的表使用AUTO_INCREMENT

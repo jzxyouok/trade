@@ -68,7 +68,7 @@ class Google extends Controller
 
 
         // 检查苹果订单 TODO :: 事务或者数据库使用唯一索引防止高并发导致的问题
-        $trade = $this->tradeModel->getTradeByReference('apple', $transactionReference);
+        $trade = $this->tradeModel->getTradeByReference('google', $transactionReference);
         if (!$trade) {
             $trade_data = [
                 "transaction" => $this->tradeModel->createTransaction($user_id),
@@ -76,11 +76,10 @@ class Google extends Controller
                 "user_id"     => $user_id,
                 "amount"      => $product['price'],
                 "currency"    => $product['currency'],
-                "gateway"     => 'apple',
+                "gateway"     => 'google',
                 "product_id"  => $product_id,
                 "custom"      => $custom,
                 "status"      => 'paid',
-                "trade_no"    => $transactionReference,
                 "ip"          => $ipAddress,
                 "uuid"        => '',
                 "adid"        => '',
@@ -88,7 +87,12 @@ class Google extends Controller
                 "channel"     => '',
                 "create_time" => date('Y-m-d H:i:s') // 不使用SQL自动插入时间，避免时区不统一
             ];
-            $trade = $this->tradeModel->createTrade($trade_data);
+            $more = [
+                'trade_no'   => $transactionReference,
+                'key_string' => $response['key_string'],
+                'data'       => $this->_receipt,
+            ];
+            $trade = $this->tradeModel->createTrade($trade_data, $more);
         } else {
             if (in_array($trade['status'], ['complete', 'sandbox'])) {
                 $this->response->setJsonContent(['code' => 0, 'msg' => 'success'])->send();
@@ -102,7 +106,7 @@ class Google extends Controller
 
 
         // 通知厂商
-        $response = $this->tradeModel->noticeTo($trade, $trade['trade_no']);
+        $response = $this->tradeModel->noticeTo($trade, $transactionReference);
 
 
         // 输出
@@ -162,6 +166,7 @@ class Google extends Controller
             $result = array(
                 'transactionReference' => $receipt->orderId,
                 'product_id'           => $receipt->productId,
+                'key_string'           => $receipt->purchaseToken,
             );
             return $result;
         } elseif ($result == 0) {
