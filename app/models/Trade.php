@@ -51,7 +51,7 @@ class Trade extends Model
     public function getTrade($transaction = '')
     {
         $sql = "SELECT id,transaction,app_id,user_id,currency,amount,amount_usd,status,gateway,product_id,custom,ip
-FROM `transactions` WHERE transaction=:transaction";
+FROM `transactions` WHERE transaction=:transaction LIMIT 1";
         $bind = array('transaction' => $transaction);
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
@@ -205,6 +205,7 @@ LIMIT 1";
 
                 DI::getDefault()->get('dbData')->commit();
             } catch (Exception $e) {
+                writeLog('transaction update failed: ' . $tradeInfo['transaction'] . '|' . $transactionReference);
                 DI::getDefault()->get('dbData')->rollback();
                 return false;
             }
