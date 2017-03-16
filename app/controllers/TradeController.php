@@ -103,7 +103,8 @@ class TradeController extends ControllerBase
 
 
         // 通知CP-SERVER
-        $result = $this->tradeModel->noticeTo($trade, $response['transactionReference']);
+        $raw = isset($response['raw']) ? $response['raw'] : '';
+        $result = $this->tradeModel->noticeTo($trade, $response['transactionReference'], $raw);
 
 
         // 输出

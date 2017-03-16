@@ -185,22 +185,30 @@ LIMIT 1";
     /**
      * 发货通知; 只能是pending或paid状态
      * @param array $tradeInfo
-     * @param string $transactionReference
+     * @param null $transactionReference
+     * @param array $raw
      * @return bool
      */
-    public function noticeTo($tradeInfo = [], $transactionReference = null)
+    public function noticeTo($tradeInfo = [], $transactionReference = null, $raw = [])
     {
         // 付款状态
         if ($tradeInfo['status'] == 'pending') {
             try {
+                if (!$raw) {
+                    $raw = '';
+                }
+                if (is_array($raw)) {
+                    $raw = http_build_query($raw);
+                }
+
                 DI::getDefault()->get('dbData')->begin();
 
                 $sql = "UPDATE transactions SET status='paid' WHERE transaction=:transaction";
                 $bind = array('transaction' => $tradeInfo['transaction']);
                 DI::getDefault()->get('dbData')->execute($sql, $bind);
 
-                $sql = "UPDATE trans_more SET trade_no=:reference WHERE trans_id=:transaction";
-                $bind = array('reference' => $transactionReference, 'transaction' => $tradeInfo['transaction']);
+                $sql = "UPDATE trans_more SET trade_no=:reference, data=:data WHERE trans_id=:transaction";
+                $bind = array('reference' => $transactionReference, 'data'=>$raw, 'transaction' => $tradeInfo['transaction']);
                 DI::getDefault()->get('dbData')->execute($sql, $bind);
 
                 DI::getDefault()->get('dbData')->commit();
