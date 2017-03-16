@@ -71,12 +71,17 @@ class TradeController extends ControllerBase
 
 
         // 结果处理
-        $transactionId = $response['transactionId'];
         if (!$response['isSuccessful']) {
-            $logger->error($transactionId . '|' . $response['message']);
+            if (!isset($response['transactionId'])) {
+                $error_log = $response['message'];
+            } else {
+                $error_log = $response['transactionId'] . '|' . $response['message'];
+            }
+            $logger->error($error_log);
             $logger->close();
             exit('failed');
         }
+        $transactionId = $response['transactionId'];
 
         // 获取订单信息
         $trade = $this->tradeModel->getTrade($transactionId);
