@@ -407,12 +407,61 @@ LIMIT 1";
                 'title'  => 'PayPal',
                 'remark' => '',
             ],
+            'mycard'      => [
+                'title'  => 'MyCard',
+                'remark' => '',
+            ],
+            'mol'         => [
+                'title'  => 'Mol Pay',
+                'remark' => '',
+            ],
             'paymentwall' => [
                 'title'  => 'PaymentWall',
                 'remark' => '更多支付方式',
             ],
         ];
         return array_intersect_key($ways, array_flip(explode(',', $data['trade_method'])));
+    }
+
+
+    /**
+     * 获取子网关
+     * @param string $gateway
+     * @return mixed
+     */
+    public function getSubGateways($gateway = '')
+    {
+        $result = [
+            'mol'    => [
+                'wallet'  => [
+                    'title'  => 'e-Wallet',
+                    'remark' => '',
+                ],
+                'card'    => [
+                    'title'  => 'Mol Points Card',
+                    'remark' => '',
+                ],
+                'telecom' => [
+                    'title'  => 'Mol Line',
+                    'remark' => '',
+                ]
+            ],
+            'mycard' => [
+                'wallet'  => [
+                    'title'  => 'MyCard 会员扣点',
+                    'remark' => '',
+                ],
+                'card'    => [
+                    'title'  => 'MyCard 实体卡',
+                    'remark' => '',
+                ],
+                'telecom' => [
+                    'title'  => 'MyCard 手机付款,WebATM',
+                    'remark' => '',
+                ]
+            ],
+        ];
+        return $result[$gateway];
     }
 
 

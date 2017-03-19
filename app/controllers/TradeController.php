@@ -173,6 +173,15 @@ class TradeController extends ControllerBase
         }
 
 
+        // 子网关
+        if (in_array($this->_gateway, ['mol', 'mycard']) && !$this->_trade['sub']) {
+            $this->view->gateways = $this->tradeModel->getSubGateways($this->_gateway);
+            $this->view->sub = true;
+            $this->view->pick("trade/gateway");
+            return true;
+        }
+
+
         // 产品选择
         $this->view->products = $this->tradeModel->getProducts($this->_app, $this->_gateway);
         $this->view->pick("trade/standard");
@@ -213,6 +222,7 @@ class TradeController extends ControllerBase
         // 重要参数
         $this->_trade['app_id'] = $this->_app = $this->request->get('app_id', 'alphanum');
         $this->_trade['gateway'] = $this->_gateway = $this->request->get('gateway', 'alphanum');
+        $this->_trade['sub'] = $this->request->get('sub', 'alphanum');
 
         // 关键参数
         $this->_trade['user_id'] = $this->_user_id;

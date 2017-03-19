@@ -36,7 +36,7 @@
             <form id="trade">
 
                 {%for key, item in gateways%}
-                <a href="javascript:void(0);" class="am-list-item" onclick="gateway('{{key}}');">
+                <a href="javascript:void(0);" class="am-list-item" onclick="{%if sub is defined%}sub{%else%}gateway{%endif%}('{{key}}');">
                     <div class="am-list-thumb"><img src="/assets/images/logo_{{key}}_48x48.png" alt=""></div>
                     <div class="am-list-content">
                         <div class="am-list-title">{{item['title']}}</div>
@@ -61,6 +61,11 @@
     function gateway(gateway) {
         var requestData = location.href;
         requestData += '&gateway=' + gateway
+        window.location.href = requestData;
+    }
+    function sub(gateway) {
+        var requestData = location.href;
+        requestData += '&sub=' + gateway
         window.location.href = requestData;
     }
 </script>
