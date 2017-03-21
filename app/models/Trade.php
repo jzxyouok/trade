@@ -383,6 +383,7 @@ LIMIT 1";
      * 获取网关
      * @param int $app_id
      * @return array|bool
+     * TODO :: 支持网关排序
      */
     public function getGateways($app_id = 0)
     {

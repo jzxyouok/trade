@@ -36,8 +36,8 @@
             <form id="trade">
 
                 {%for key, item in gateways%}
-                <a href="javascript:void(0);" class="am-list-item" onclick="{%if sub is defined%}sub{%else%}gateway{%endif%}('{{key}}');">
-                    <div class="am-list-thumb"><img src="/assets/images/logo_{{key}}_48x48.png" alt=""></div>
+                <a href="javascript:void(0);" class="am-list-item" onclick="{%if parent is defined%}sub{%else%}gateway{%endif%}('{{key}}');">
+                    <div class="am-list-thumb"><img src="/assets/images/logo_{%if parent is defined%}{{parent}}_{%endif%}{{key}}_48x48.png" alt=""></div>
                     <div class="am-list-content">
                         <div class="am-list-title">{{item['title']}}</div>
                         <div class="am-list-brief">{{item['remark']}}</div>

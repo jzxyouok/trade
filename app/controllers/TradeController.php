@@ -176,7 +176,7 @@ class TradeController extends ControllerBase
         // 子网关
         if (in_array($this->_gateway, ['mol', 'mycard']) && !$this->_trade['sub']) {
             $this->view->gateways = $this->tradeModel->getSubGateways($this->_gateway);
-            $this->view->sub = true;
+            $this->view->parent = $this->_gateway;
             $this->view->pick("trade/gateway");
             return true;
         }
