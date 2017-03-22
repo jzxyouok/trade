@@ -142,14 +142,19 @@ class TradeController extends ControllerBase
 
             // PayTime
             $options = $this->getConfigOptions();
-            $payTime = new PayTime(ucfirst($this->_gateway));
+            $gateway_name = $this->_gateway;
+            if ($this->_trade['sub']) {
+                $gateway_name = $this->_gateway . '_' . $this->_trade['sub'];
+            }
+            $payTime = new PayTime(ucfirst($gateway_name));
             $payTime->setOptions($options);
             $payTime->purchase([
                 'transactionId' => $result['transaction'],
                 'amount'        => $result['amount'],
                 'currency'      => $result['currency'],
                 'productId'     => $result['product_id'],
-                'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id']
+                'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id'],
+                'custom'        => $this->_app
             ]);
             $payTime->send();
             exit();
