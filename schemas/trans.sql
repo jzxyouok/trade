@@ -32,9 +32,29 @@ CREATE TABLE `apps` (
   `app_id` varchar(16) DEFAULT '',
   `secret_key` varchar(32) DEFAULT '',
   `notify_url` varchar(512) DEFAULT '',
-  `trade_method` varchar(40) DEFAULT '',
   `trade_tip` varchar(1000) DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='应用';
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `gateways`
+--
+
+CREATE TABLE `gateways` (
+  `id` int(11) UNSIGNED NOT NULL,
+  `app_id` varchar(16) DEFAULT '' COMMENT '应用ID',
+  `type` enum('wallet','card','telecom') DEFAULT 'wallet' COMMENT '付费类型:钱包 预付卡 运营商',
+  `sandbox` tinyint(3) DEFAULT '0' COMMENT '是否沙箱测试',
+  `parent` int(10) DEFAULT '0' COMMENT '父级ID',
+  `sort` int(10) DEFAULT '0' COMMENT '排序',
+  `name` varchar(64) DEFAULT '' COMMENT '名称',
+  `remark` varchar(125) DEFAULT '' COMMENT '备注',
+  `gateway` varchar(16) DEFAULT '' COMMENT '网关',
+  `sub` varchar(32) DEFAULT '' COMMENT '子网关',
+  `currency` varchar(32) DEFAULT '' COMMENT '货币',
+  `tips` varchar(1000) DEFAULT '' COMMENT '提示信息'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='充值网关配置';
 
 -- --------------------------------------------------------
 
@@ -130,6 +150,13 @@ ALTER TABLE `apps`
   ADD KEY `app_id` (`app_id`);
 
 --
+-- Indexes for table `gateways`
+--
+ALTER TABLE `gateways`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `app_id` (`app_id`);
+
+--
 -- Indexes for table `notify_logs`
 --
 ALTER TABLE `notify_logs`
@@ -168,6 +195,11 @@ ALTER TABLE `trans_more`
 -- 使用表AUTO_INCREMENT `apps`
 --
 ALTER TABLE `apps`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+--
+-- 使用表AUTO_INCREMENT `gateways`
+--
+ALTER TABLE `gateways`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `notify_logs`
