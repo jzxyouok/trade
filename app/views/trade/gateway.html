@@ -24,22 +24,27 @@
 <div class="demo demo-list">
     <div class="demo-content" style="padding-bottom: 20px;">
 
-        <div class="am-message multi">
+        <div class="am-inform">
+            <div class="am-inform-content">{{tips}}</div>
+        </div>
+
+        <!--<div class="am-message multi">
             <i class="am-icon message info"></i>
             <div class="am-message-main">选择支付渠道</div>
             <div class="am-message-sub">{{tips}}</div>
-        </div>
-
+        </div>-->
 
         <!-- @link https://render.alipay.com/p/f/antui/demo.html -->
         <div class="am-list twoline" style="padding: 2px 0;">
             <form id="trade">
 
-                {%for key, item in gateways%}
-                <a href="javascript:void(0);" class="am-list-item" onclick="{%if parent is defined%}sub{%else%}gateway{%endif%}('{{key}}');">
-                    <div class="am-list-thumb"><img src="/assets/images/logo_{%if parent is defined%}{{parent}}_{%endif%}{{key}}_48x48.png" alt=""></div>
+                {%for item in gateways%}
+                {%set gateway=item['gateway']%}
+                {%set sub=item['sub']%}
+                <a href="javascript:void(0);" class="am-list-item" onclick="gateway('{{gateway}}','{{sub}}');">
+                    <div class="am-list-thumb"><img src="/assets/images/logo_{{gateway}}_{%if sub%}{{sub}}_{%endif%}48x48.png" alt=""></div>
                     <div class="am-list-content">
-                        <div class="am-list-title">{{item['title']}}</div>
+                        <div class="am-list-title">{{item['name']}}</div>
                         <div class="am-list-brief">{{item['remark']}}</div>
                     </div>
                     <div class="am-list-arrow"><span class="am-icon arrow horizontal"></span></div>
@@ -58,14 +63,12 @@
 <script src="https://a.alipayobjects.com/g/antui/antui/10.0.0/antui.js"></script>
 <script src="https://as.alipayobjects.com/g/animajs/mtracker/3.0.7/seed.js"></script>
 <script type="text/javascript">
-    function gateway(gateway) {
+    function gateway(gateway, sub) {
         var requestData = location.href;
-        requestData += '&gateway=' + gateway
-        window.location.href = requestData;
-    }
-    function sub(gateway) {
-        var requestData = location.href;
-        requestData += '&sub=' + gateway
+        requestData += '&gateway=' + gateway;
+        if (sub != '') {
+            requestData += '&sub=' + sub;
+        }
         window.location.href = requestData;
     }
 </script>

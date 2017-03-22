@@ -289,7 +289,7 @@ LIMIT 1";
      */
     public function getAppConfig($app_id = 0)
     {
-        $sql = "SELECT app_id,secret_key,notify_url,trade_method,trade_tip FROM `apps` WHERE app_id=:app_id";
+        $sql = "SELECT app_id,secret_key,notify_url,trade_tip FROM `apps` WHERE app_id=:app_id";
         $bind = array('app_id' => $app_id);
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
@@ -382,87 +382,45 @@ LIMIT 1";
     /**
      * 获取网关
      * @param int $app_id
-     * @return array|bool
-     * TODO :: 支持网关排序
+     * @param null $gateway
+     * @return bool
      */
-    public function getGateways($app_id = 0)
+    public function getGateways($app_id = 0, $gateway = null)
     {
-        $sql = "SELECT trade_method FROM `apps` WHERE app_id=:app_id ";
-        $bind = array('app_id' => $app_id);
+        if (!$gateway) {
+            $sql = "SELECT id,parent,`name`,remark,gateway,sub,currency,tips FROM `gateways` WHERE app_id=:app_id AND parent = 0 ORDER BY sort DESC";
+            $bind = array('app_id' => $app_id);
+        } else {
+            $sql = "SELECT id,parent,`name`,remark,gateway,sub,currency,tips FROM `gateways` WHERE app_id=:app_id AND parent !=0 AND gateway=:gateway ORDER BY sort DESC";
+            $bind = array('app_id' => $app_id, 'gateway' => $gateway);
+        }
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
-        $data = $query->fetch();
+        $data = $query->fetchAll();
         if (!$data) {
             return false;
         }
-        $ways = [
-            'alipay'      => [
-                'title'  => '支付宝',
-                'remark' => '推荐有支付宝账号的用户使用',
-            ],
-            'weixin'      => [
-                'title'  => '微信支付',
-                'remark' => '',
-            ],
-            'paypal'      => [
-                'title'  => 'PayPal',
-                'remark' => '',
-            ],
-            'mycard'      => [
-                'title'  => 'MyCard',
-                'remark' => '',
-            ],
-            'mol'         => [
-                'title'  => 'Mol Pay',
-                'remark' => '',
-            ],
-            'paymentwall' => [
-                'title'  => 'PaymentWall',
-                'remark' => '更多支付方式',
-            ],
-        ];
-        return array_intersect_key($ways, array_flip(explode(',', $data['trade_method'])));
+        return $data;
     }
 
 
     /**
-     * 获取子网关
+     * 获取贴士信息
+     * @param int $app_id
      * @param string $gateway
-     * @return mixed
+     * @return string
      */
-    public function getSubGateways($gateway = '')
+    public function getTips($app_id = 0, $gateway = '')
     {
-        $result = [
-            'mol'    => [
-                'wallet'  => [
-                    'title'  => 'e-Wallet',
-                    'remark' => '',
-                ],
-                'card'    => [
-                    'title'  => 'Mol Points Card',
-                    'remark' => '',
-                ],
-                'telecom' => [
-                    'title'  => 'Mol Line',
-                    'remark' => '',
-                ]
-            ],
-            'mycard' => [
-                'wallet'  => [
-                    'title'  => 'MyCard 会员扣点',
-                    'remark' => '',
-                ],
-                'card'    => [
-                    'title'  => 'MyCard 实体卡',
-                    'remark' => '',
-                ],
-                'telecom' => [
-                    'title'  => 'MyCard 手机付款,WebATM',
-                    'remark' => '',
-                ]
-            ],
-        ];
-        return $result[$gateway];
+        $sql = "SELECT `name`,remark,tips FROM `gateways` WHERE app_id=:app_id AND gateway=:gateway AND parent = 0 AND sub='' LIMIT 1";
+        $bind = array('app_id' => $app_id, 'gateway' => $gateway);
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        $data = $query->fetch();
+        if (!$data) {
+            return '';
+        }
+        return $data['tips'];
     }
 
 

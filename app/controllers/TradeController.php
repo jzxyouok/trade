@@ -156,33 +156,38 @@ class TradeController extends ControllerBase
         }
 
 
-        // tips
-        $app = $this->tradeModel->getAppConfig($this->_app);
-        $this->view->tips = isset($app['trade_tip']) ? $app['trade_tip'] : '';
-
-
         // 选择网关
         if (!$this->_gateway) {
+            // tips
+            $app = $this->tradeModel->getAppConfig($this->_app);
+            $this->view->tips = isset($app['trade_tip']) ? $app['trade_tip'] : '';
+
+            // 网关列表
             $this->view->gateways = $this->tradeModel->getGateways($this->_app);
             if (!$this->view->gateways) {
                 $this->response->setJsonContent(['code' => 1, 'msg' => 'no gateway'])->send();
                 exit();
             }
+
+            // 模板
             $this->view->pick("trade/gateway");
             return true;
         }
 
 
-        // 子网关
-        if (in_array($this->_gateway, ['mol', 'mycard']) && !$this->_trade['sub']) {
-            $this->view->gateways = $this->tradeModel->getSubGateways($this->_gateway);
-            $this->view->parent = $this->_gateway;
-            $this->view->pick("trade/gateway");
-            return true;
+        // 判断当前是否终极网关
+        if (!$this->_trade['sub']) {
+            $this->view->gateways = $this->tradeModel->getGateways($this->_app, $this->_gateway);
+            if ($this->view->gateways) {
+                $this->view->tips = $this->tradeModel->getTips($this->_app, $this->_gateway);
+                $this->view->pick("trade/gateway");
+                return true;
+            }
         }
 
 
         // 产品选择
+        $this->view->tips = '';
         $this->view->products = $this->tradeModel->getProducts($this->_app, $this->_gateway);
         $this->view->pick("trade/standard");
     }
