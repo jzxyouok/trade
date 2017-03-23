@@ -42,7 +42,7 @@
             <div class="am-list-body">
                 {%for item in products%}
                 <label class="am-list-item radio">
-                    <div class="am-list-thumb"><img src="{%if item['image']!=''%}{{item['image']}}{%else%}http://www.easyicon.net/api/resizeApi.php?id=1186722&size=48{%endif%}" alt=""></div>
+                    <div class="am-list-thumb"><img src="{%if item['image']!=''%}{{item['image']}}{%else%}/assets/images/diamond.png{%endif%}" alt=""></div>
                     <div class="am-list-content">
                         <div class="am-list-title">{{item['name']}}</div>
                         <div class="am-list-brief">{{item['remark']}}</div>
