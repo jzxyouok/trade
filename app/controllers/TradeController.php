@@ -56,7 +56,7 @@ class TradeController extends ControllerBase
         $this->_gateway = trim($this->dispatcher->getParam('param'), '/');
 
 
-        // 苹果谷歌单独处理
+        // 苹果谷歌: 平台无订单记录的充值网关单独处理
         if (in_array($this->_gateway, ['apple', 'google'])) {
             $service = Services::pay($this->_gateway);
             $service->notify();
@@ -70,7 +70,7 @@ class TradeController extends ControllerBase
         $response = $payTime->notify();
 
 
-        // 结果处理
+        // 网关支付结果处理
         if (!$response['isSuccessful']) {
             if (!isset($response['transactionId'])) {
                 $error_log = $response['message'];
@@ -82,6 +82,7 @@ class TradeController extends ControllerBase
             exit('failed');
         }
         $transactionId = $response['transactionId'];
+
 
         // 获取订单信息
         $trade = $this->tradeModel->getTrade($transactionId);
@@ -99,6 +100,24 @@ class TradeController extends ControllerBase
         }
         if (!in_array($trade['status'], ['pending', 'paid'])) {
             exit($trade['status']);
+        }
+
+
+        // 卡支付判断【预付卡或者电信支付】
+        if ($trade['amount'] == 0 || $trade['product_id'] == '') {
+            if (empty($response['amount']) || empty($response['currency'])) {
+                exit('failed');
+            }
+            // 更新订单额度
+            $trade_modify_data = $this->tradeModel->updateTradeAmount(
+                $trade['app_id'],
+                $transactionId,
+                ['gateway' => $this->_gateway, 'amount' => $response['amount'], 'currency' => $response['currency']]
+            );
+            if (!$trade_modify_data) {
+                exit('cant find product');
+            }
+            $trade = array_merge($trade, $trade_modify_data);
         }
 
 

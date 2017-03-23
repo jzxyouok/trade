@@ -98,6 +98,44 @@ LIMIT 1";
 
 
     /**
+     * 更新订单内容【充值回调】
+     * TODO :: 目前精确匹配, 非模糊匹配
+     * @param string $app_id
+     * @param $transaction
+     * @param array $data
+     * @return array|bool
+     */
+    public function updateTradeAmount($app_id = '', $transaction, $data = [])
+    {
+        $product = $this->getProductByAmount($app_id, $data['gateway'], $data['amount'], $data['currency']);
+        if (!$product) {
+            writeLog("getProductByAmount can`t find product", 'error' . date('Ym'));
+            return false;
+        }
+
+        // 更新
+        $modify = [
+            "amount"     => sprintf('%.2f', $data['amount']),
+            "currency"   => $data['currency'],
+            "product_id" => $product['product_id']
+        ];
+        $result = DI::getDefault()->get('dbData')->updateAsDict(
+            "transactions",
+            $modify,
+            array(
+                'conditions' => 'transaction = ?',
+                'bind'       => array($transaction),
+                'bindTypes'  => array(\PDO::PARAM_INT)
+            )
+        );
+        if (!$result) {
+            return false;
+        }
+        return $modify;
+    }
+
+
+    /**
      * 创建订单号
      * @param int $code
      * @return bool|string
@@ -132,7 +170,7 @@ LIMIT 1";
         if (empty($tradeData['user_id'])) {
             return false;
         }
-        // 检查产品 TODO:: 卡类支付暂不适用
+        // 检查产品
         if (isset($tradeData['product_id'])) {
             $sql = "SELECT id, price, currency FROM `products` WHERE status=1 AND product_id=:product_id";
             $bind = array('product_id' => $tradeData['product_id']);
@@ -152,7 +190,7 @@ LIMIT 1";
         }
 
 
-        // 创建订单
+        // 创建订单【卡类支付创建空订单】
         $trade = array(
             "transaction" => isset($tradeData['transaction']) ? $tradeData['transaction'] : $this->createTransaction($tradeData['user_id']),
             "app_id"      => $tradeData['app_id'],
@@ -211,7 +249,11 @@ LIMIT 1";
                 DI::getDefault()->get('dbData')->execute($sql, $bind);
 
                 $sql = "UPDATE trans_more SET trade_no=:reference, data=:data WHERE trans_id=:transaction";
-                $bind = array('reference' => $transactionReference, 'data'=>$raw, 'transaction' => $tradeInfo['transaction']);
+                $bind = array(
+                    'reference'   => $transactionReference,
+                    'data'        => $raw,
+                    'transaction' => $tradeInfo['transaction']
+                );
                 DI::getDefault()->get('dbData')->execute($sql, $bind);
 
                 DI::getDefault()->get('dbData')->commit();
@@ -376,6 +418,26 @@ LIMIT 1";
     {
         $sql = "SELECT id,name,product_id,price,currency,coin,remark,image FROM `products` WHERE status=1 AND product_id=:product_id ";
         $bind = array('product_id' => $product_id);
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        return $query->fetch();
+    }
+
+
+    /**
+     * 决策产品 按额度决策
+     * 精确匹配
+     * @param string $app_id
+     * @param string $gateway
+     * @param int $amount
+     * @param string $currency
+     * @return mixed
+     */
+    public function getProductByAmount($app_id = '', $gateway = '', $amount = 0, $currency = 'USD')
+    {
+        $sql = "SELECT id,`name`,product_id,price,currency,coin,remark,image FROM `products`
+WHERE status=1 AND app_id=:app_id AND gateway=:gateway AND price=:amount AND currency=:currency";
+        $bind = array('app_id' => $app_id, 'gateway' => $gateway, 'amount' => $amount, 'currency' => $currency);
         $query = DI::getDefault()->get('dbData')->query($sql, $bind);
         $query->setFetchMode(Db::FETCH_ASSOC);
         return $query->fetch();
