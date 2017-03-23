@@ -130,37 +130,6 @@ class TradeController extends ControllerBase
         $this->initParams();
 
 
-        // 直接储值
-        if ($this->_gateway && $this->_trade['product_id']) {
-
-            // 创建订单
-            $result = $this->tradeModel->createTrade($this->_trade);
-            if (!$result) {
-                $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
-                exit();
-            }
-
-            // PayTime
-            $options = $this->getConfigOptions();
-            $gateway_name = $this->_gateway;
-            if ($this->_trade['sub']) {
-                $gateway_name = $this->_gateway . '_' . $this->_trade['sub'];
-            }
-            $payTime = new PayTime(ucfirst($gateway_name));
-            $payTime->setOptions($options);
-            $payTime->purchase([
-                'transactionId' => $result['transaction'],
-                'amount'        => $result['amount'],
-                'currency'      => $result['currency'],
-                'productId'     => $result['product_id'],
-                'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id'],
-                'custom'        => $this->_app
-            ]);
-            $payTime->send();
-            exit();
-        }
-
-
         // 选择网关
         if (!$this->_gateway) {
             // tips
@@ -188,6 +157,42 @@ class TradeController extends ControllerBase
                 $this->view->pick("trade/gateway");
                 return true;
             }
+        }
+
+
+        // 以下已经决策出终极网关
+        $gateway = $this->tradeModel->getFinalGateway($this->_app, $this->_gateway, $this->_trade['sub']);
+
+
+        // 进入储值
+        if (($gateway['type'] != 'wallet') || $this->_trade['product_id']) {
+            // 创建订单
+            $result = $this->tradeModel->createTrade($this->_trade);
+            if (!$result) {
+                $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
+                exit();
+            }
+
+            // PayTime
+            $options = $this->getConfigOptions($gateway['sandbox']);
+            $options['sandbox'] = $gateway['sandbox'];  // 是否沙箱
+            $options['type'] = $gateway['type'];        // 支付类型
+            $gateway_name = $this->_gateway;
+            if ($this->_trade['sub']) {
+                $gateway_name = $this->_gateway . '_' . $this->_trade['sub'];
+            }
+            $payTime = new PayTime(ucfirst($gateway_name));
+            $payTime->setOptions($options);
+            $payTime->purchase([
+                'transactionId' => $result['transaction'],
+                'amount'        => $result['amount'],
+                'currency'      => $result['currency'],
+                'productId'     => $result['product_id'],
+                'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id'],
+                'custom'        => $this->_app
+            ]);
+            $payTime->send();
+            exit();
         }
 
 
@@ -262,14 +267,24 @@ class TradeController extends ControllerBase
 
     /**
      * 获取配置选项
+     * @param int $sandbox
      * @return mixed
+     * @throws \Exception
      */
-    private function getConfigOptions()
+    private function getConfigOptions($sandbox = 0)
     {
-        $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
+        if (!$sandbox) {
+            $config = Yaml::parse(file_get_contents(APP_DIR . '/config/trade.yml'));
+        } else {
+            try {
+                $config = Yaml::parse(file_get_contents(APP_DIR . '/config/sandbox.trade.yml'));
+            } catch (\Exception $e) {
+                throw new \Exception('can`t find file sandbox.trade.yml');
+            }
+        }
 
         if (!isset($config[$this->_gateway])) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => 'no config about the gateway'])->send();
+            throw new \Exception('no config about the gateway');
             exit();
         }
 

@@ -129,6 +129,9 @@ LIMIT 1";
      */
     public function createTrade($tradeData = [], $more = [])
     {
+        if (empty($tradeData['user_id'])) {
+            return false;
+        }
         // 检查产品 TODO:: 卡类支付暂不适用
         if (isset($tradeData['product_id'])) {
             $sql = "SELECT id, price, currency FROM `products` WHERE status=1 AND product_id=:product_id";
@@ -154,8 +157,8 @@ LIMIT 1";
             "transaction" => isset($tradeData['transaction']) ? $tradeData['transaction'] : $this->createTransaction($tradeData['user_id']),
             "app_id"      => $tradeData['app_id'],
             "user_id"     => $tradeData['user_id'],
-            "amount"      => $data['price'],
-            "currency"    => $data['currency'] ? $data['currency'] : 'CNY',
+            "amount"      => isset($data['price']) ? $data['price'] : 0,
+            "currency"    => isset($data['currency']) ? $data['currency'] : 'USD',
             "gateway"     => strtolower($tradeData['gateway']),
             "product_id"  => $tradeData['product_id'],
             "custom"      => $tradeData['custom'],
@@ -400,6 +403,32 @@ LIMIT 1";
         if (!$data) {
             return false;
         }
+        return $data;
+    }
+
+
+    /**
+     * 获取终端网关信息
+     * @param int $app_id
+     * @param null $gateway
+     * @param null $sub
+     * @return bool
+     */
+    public function getFinalGateway($app_id = 0, $gateway = null, $sub = null)
+    {
+        if (!$app_id || !$gateway) {
+            return false;
+        }
+        if ($sub) {
+            $sql = "SELECT id,`type`,`sandbox`,`name`,remark,gateway,sub,currency FROM `gateways` WHERE app_id=:app_id AND gateway=:gateway AND sub=:sub LIMIT 1";
+            $bind = array('app_id' => $app_id, 'gateway' => $gateway, 'sub' => $sub);
+        } else {
+            $sql = "SELECT id,`type`,`sandbox`,`name`,remark,gateway,sub,currency FROM `gateways` WHERE app_id=:app_id AND gateway=:gateway AND parent = 0 LIMIT 1";
+            $bind = array('app_id' => $app_id, 'gateway' => $gateway);
+        }
+        $query = DI::getDefault()->get('dbData')->query($sql, $bind);
+        $query->setFetchMode(Db::FETCH_ASSOC);
+        $data = $query->fetch();
         return $data;
     }
 
