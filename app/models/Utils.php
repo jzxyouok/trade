@@ -12,17 +12,19 @@ class Utils extends Model
 {
 
 
+    // info, success, warn, error
     static public function tips($type = 'info', $message = '', $redirect = '', $seconds = 0)
     {
         $flash = json_encode(
             array(
                 'type'     => $type,
-                'message'  => $message,
+                'msg'      => _($type),
+                'message'  => _($message),
                 'seconds'  => !empty($seconds) ? $seconds : 3,
                 'redirect' => $redirect ? $redirect : 'javascript:history.back(-1)'
             )
         );
-        DI::getDefault()->get('cookies')->set('flash', $flash, time() + 30);
+        DI::getDefault()->get('cookies')->set('flash', $flash, time() + 3);
         DI::getDefault()->get('cookies')->send();
         header('Location:/public/tips');
         exit();
