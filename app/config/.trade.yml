@@ -31,6 +31,7 @@ mycard:
     wallet:
         app_id  :
         app_key :
+        notify_url  :
     telecom:
         app_id  :
         app_key :

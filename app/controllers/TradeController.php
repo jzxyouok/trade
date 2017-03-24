@@ -65,7 +65,7 @@ class TradeController extends ControllerBase
 
 
         $payTime = new PayTime(ucfirst($this->_gateway));
-        $options = $this->getConfigOptions();
+        $options = $this->getConfigOptions(); // TODO :: 此处暂无法判断是否测试状态
         $payTime->setOptions($options);
         $response = $payTime->notify();
 
