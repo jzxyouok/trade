@@ -158,8 +158,7 @@ class TradeController extends ControllerBase
             // 网关列表
             $this->view->gateways = $this->tradeModel->getGateways($this->_app);
             if (!$this->view->gateways) {
-                $this->response->setJsonContent(['code' => 1, 'msg' => 'no gateway'])->send();
-                exit();
+                Utils::tips('error', _('error gateway'));
             }
 
             // 模板
@@ -188,8 +187,7 @@ class TradeController extends ControllerBase
             // 创建订单
             $result = $this->tradeModel->createTrade($this->_trade);
             if (!$result) {
-                $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
-                exit();
+                Utils::tips('error', _('create trade failed'));
             }
 
             // PayTime
@@ -276,7 +274,10 @@ class TradeController extends ControllerBase
 
         // 检查参数
         if (!$this->_trade['app_id']) {
-            Utils::outputJSON(array('code' => 1, 'msg' => 'Invalid Param [app_id]'));
+            Utils::tips('error', _('missing parameter') . ' app_id');
+        }
+        if (!$this->_trade['user_id']) {
+            Utils::tips('error', _('missing parameter') . ' user_id');
         }
         if (!$this->_trade['subject']) {
             $this->_trade['subject'] = $this->_trade['product_id'];
