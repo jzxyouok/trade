@@ -180,6 +180,9 @@ class TradeController extends ControllerBase
 
         // 以下已经决策出终极网关
         $gateway = $this->tradeModel->getFinalGateway($this->_app, $this->_gateway, $this->_trade['sub']);
+        if (!$gateway) {
+            Utils::tips('error', _('error gateway'));
+        }
 
 
         // 进入储值
