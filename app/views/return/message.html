@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title><?php echo _('Trading Result') ?> | Result</title>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" type="text/css" href="https://a.alipayobjects.com/g/antui/antui/10.0.0/rem/antui-all.css" media="all">
+
+    <meta name="Alipay:title" content="AntUI" />
+    <meta name="Alipay:imgUrl" content=""/>
+    <meta name="Alipay:desc" content="AntUI"/>
+    <meta name="fengdie:pkg" content="antui-demo@1.0.4" />
+    <meta name="fengdie:aid" content="16433"/>
+    <meta name="fengdie:pid" content="28948"/>
+</head>
+
+<body>
+
+<div class="demo demo-list">
+    <div class="demo-content">
+
+        <div class="am-message result">
+            <i class="am-icon result {{tips['type']}}"></i> <!--warn-->
+            <div class="am-message-main">{{tips['msg']}}</div>
+            <div class="am-message-sub">{{tips['message']}}</div>
+            <span id="wait" style="display: none;">{{tips['seconds']}}</span>
+            <a href="{{tips['redirect']}}" id="href"></a>
+        </div>
+
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    (function(){
+        var wait = document.getElementById('wait'),href = document.getElementById('href').href;
+        var interval = setInterval(function(){
+            var time = --wait.innerHTML;
+            if(time <= 0) {
+                location.href = href;
+                clearInterval(interval);
+            };
+        }, 1000);
+    })();
+</script>
+</body>
+</html>
