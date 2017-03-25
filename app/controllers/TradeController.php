@@ -211,7 +211,24 @@ class TradeController extends ControllerBase
                 'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id'],
                 'custom'        => $this->_app
             ]);
-            $payTime->send();
+
+
+            // 响应处理
+            try {
+                $response = $payTime->send();
+
+                // start call service process, only MyCard can get here now
+                $service = Services::pay($this->_gateway);
+                $service->process($result['transaction'], $response);
+                // end call
+
+                if (isset($response['redirect'])) {
+                    $payTime->redirect();
+                }
+            } catch (\Exception $e) {
+                // TODO :: error log
+                Utils::tips('error', $e->getMessage());
+            }
             exit();
         }
 

@@ -81,6 +81,26 @@ LIMIT 1";
 
 
     /**
+     * 更新网关订单
+     * @param string $transaction
+     * @param array $data
+     * @return mixed
+     */
+    public function setTradeReference($transaction = '', $data = [])
+    {
+        return DI::getDefault()->get('dbData')->updateAsDict(
+            "trans_more",
+            $data,
+            array(
+                'conditions' => 'trans_id = ?',
+                'bind'       => array($transaction),
+                'bindTypes'  => array(\PDO::PARAM_STR)
+            )
+        );
+    }
+
+
+    /**
      * 更新订单状态
      * @param string $transaction
      * @param string $status
