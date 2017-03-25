@@ -83,58 +83,58 @@ class TradeController extends ControllerBase
         }
 
 
-        // 进入储值
-        if (($gateway['type'] != 'wallet') || $this->_trade['product_id']) {
-            // 创建订单
-            $result = $this->tradeModel->createTrade($this->_trade);
-            if (!$result) {
-                Utils::tips('error', _('create trade failed'));
-            }
-
-            // PayTime
-            $options = $this->getConfigOptions($gateway['sandbox']);
-            $options['sandbox'] = $gateway['sandbox'];  // 是否沙箱
-            $options['type'] = $gateway['type'];        // 支付类型
-            $gateway_name = $this->_gateway;
-            if ($this->_trade['sub']) {
-                $gateway_name = $this->_gateway . '_' . $this->_trade['sub'];
-            }
-            $payTime = new PayTime(ucfirst($gateway_name));
-            $payTime->setOptions($options);
-            $payTime->purchase([
-                'transactionId' => $result['transaction'],
-                'amount'        => $result['amount'],
-                'currency'      => $result['currency'],
-                'productId'     => $result['product_id'],
-                'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id'],
-                'custom'        => $this->_app
-            ]);
-
-
-            // 响应处理
-            try {
-                $response = $payTime->send();
-
-                // start call service process, only MyCard can get here now
-                $service = Services::pay($this->_gateway);
-                $service->process($result['transaction'], $response);
-                // end call
-
-                if (isset($response['redirect'])) {
-                    $payTime->redirect();
-                }
-            } catch (\Exception $e) {
-                // TODO :: error log
-                Utils::tips('error', $e->getMessage());
-            }
-            exit();
+        // 产品选择
+        if ((!$this->_trade['product_id']) && ($gateway['type'] == 'wallet')) {
+            $this->view->tips = '';
+            $this->view->products = $this->tradeModel->getProducts($this->_app, $this->_gateway);
+            $this->view->pick("trade/standard");
+            return true;
         }
 
 
-        // 产品选择
-        $this->view->tips = '';
-        $this->view->products = $this->tradeModel->getProducts($this->_app, $this->_gateway);
-        $this->view->pick("trade/standard");
+        // 创建订单
+        $result = $this->tradeModel->createTrade($this->_trade);
+        if (!$result) {
+            Utils::tips('error', _('create trade failed'));
+        }
+
+        // PayTime
+        $options = $this->getConfigOptions($gateway['sandbox']);
+        $options['sandbox'] = $gateway['sandbox'];  // 是否沙箱
+        $options['type'] = $gateway['type'];        // 支付类型
+        $gateway_name = $this->_gateway;
+        if ($this->_trade['sub']) {
+            $gateway_name = $this->_gateway . '_' . $this->_trade['sub'];
+        }
+        $payTime = new PayTime(ucfirst($gateway_name));
+        $payTime->setOptions($options);
+        $payTime->purchase([
+            'transactionId' => $result['transaction'],
+            'amount'        => $result['amount'],
+            'currency'      => $result['currency'],
+            'productId'     => $result['product_id'],
+            'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id'],
+            'custom'        => $this->_app
+        ]);
+
+
+        // 响应处理
+        try {
+            $response = $payTime->send();
+
+            // start call service process, only MyCard can get here now
+            $service = Services::pay($this->_gateway);
+            $service->process($result['transaction'], $response);
+            // end call
+
+            if (isset($response['redirect'])) {
+                $payTime->redirect();
+            }
+        } catch (\Exception $e) {
+            // TODO :: error log
+            Utils::tips('error', $e->getMessage());
+        }
+        exit();
     }
 
 
