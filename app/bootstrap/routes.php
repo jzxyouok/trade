@@ -158,7 +158,7 @@ $router->add(
     "/notify/:params",
     array(
         'namespace'  => 'MyApp\Controllers',
-        'controller' => 'trade',
+        'controller' => 'notify',
         'action'     => 'notify',
         'param'      => 1
     )
@@ -167,7 +167,7 @@ $router->add(
     "/([0-9]+)/notify/:params",
     array(
         'namespace'  => 'MyApp\Controllers',
-        'controller' => 'trade',
+        'controller' => 'notify',
         'action'     => 'notify',
         'app'        => 1,
         'param'      => 2
