@@ -44,16 +44,16 @@ CREATE TABLE `apps` (
 CREATE TABLE `gateways` (
   `id` int(11) UNSIGNED NOT NULL,
   `app_id` varchar(16) DEFAULT '' COMMENT '应用ID',
-  `type` enum('wallet','card','telecom') DEFAULT 'wallet' COMMENT '付费类型:钱包 预付卡 运营商',
-  `sandbox` tinyint(3) DEFAULT '0' COMMENT '是否沙箱测试',
-  `parent` int(10) DEFAULT '0' COMMENT '父级ID',
-  `sort` int(10) DEFAULT '0' COMMENT '排序',
-  `name` varchar(64) DEFAULT '' COMMENT '名称',
-  `remark` varchar(125) DEFAULT '' COMMENT '备注',
   `gateway` varchar(16) DEFAULT '' COMMENT '网关',
   `sub` varchar(32) DEFAULT '' COMMENT '子网关',
+  `type` enum('wallet','card','telecom') DEFAULT 'wallet' COMMENT '付费类型:钱包 预付卡 运营商',
+  `name` varchar(64) DEFAULT '' COMMENT '名称',
+  `remark` varchar(125) DEFAULT '' COMMENT '备注',
   `currency` varchar(32) DEFAULT '' COMMENT '货币',
-  `tips` varchar(1000) DEFAULT '' COMMENT '提示信息'
+  `parent` int(10) DEFAULT '0' COMMENT '父级ID',
+  `sort` int(10) DEFAULT '0' COMMENT '排序',
+  `sandbox` tinyint(3) DEFAULT '0' COMMENT '是否沙箱测试',
+  `tips` varchar(1000) DEFAULT '' COMMENT '提示信息',
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='充值网关配置';
 
 -- --------------------------------------------------------
@@ -131,7 +131,7 @@ CREATE TABLE `transactions` (
 CREATE TABLE `trans_more` (
   `id` int(11) UNSIGNED NOT NULL,
   `trans_id` varchar(32) DEFAULT '',
-  `gateway` enum('apple','google','alipay','weixin','paypal','paymentwall','mycard','mol','other') DEFAULT 'other',
+  `gateway` enum('apple','google','alipay','weixin','paypal','paymentwall','mycard','mol','unipin','others') DEFAULT 'others',
   `trade_no` varchar(32) DEFAULT NULL,
   `key_string` varchar(255) DEFAULT '',
   `data` text,
