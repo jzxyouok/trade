@@ -268,12 +268,18 @@ LIMIT 1";
                 $bind = array('transaction' => $tradeInfo['transaction']);
                 DI::getDefault()->get('dbData')->execute($sql, $bind);
 
-                $sql = "UPDATE trans_more SET trade_no=:reference, data=:data WHERE trans_id=:transaction";
-                $bind = array(
-                    'reference'   => $transactionReference,
-                    'data'        => $raw,
-                    'transaction' => $tradeInfo['transaction']
-                );
+                if ($transactionReference) {
+                    $sql = "UPDATE trans_more SET trade_no=:reference, data=:data WHERE trans_id=:transaction";
+                    $bind = array(
+                        'reference'   => $transactionReference,
+                        'data'        => $raw,
+                        'transaction' => $tradeInfo['transaction']
+                    );
+                } else { // there is no transactionReference when notify; exp: MyCard
+                    $sql = "UPDATE trans_more SET data=:data WHERE trans_id=:transaction";
+                    $bind = array('data' => $raw, 'transaction' => $tradeInfo['transaction']);
+                }
+
                 DI::getDefault()->get('dbData')->execute($sql, $bind);
 
                 DI::getDefault()->get('dbData')->commit();
