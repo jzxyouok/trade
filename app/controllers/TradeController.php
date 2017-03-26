@@ -114,7 +114,8 @@ class TradeController extends ControllerBase
             'currency'      => $result['currency'],
             'productId'     => $result['product_id'],
             'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id'],
-            'custom'        => $this->_app
+            'custom'        => $this->_app,
+            'userId'        => $this->_user_id,
         ]);
 
 
@@ -134,7 +135,16 @@ class TradeController extends ControllerBase
             // TODO :: error log
             Utils::tips('error', $e->getMessage());
         }
-        exit();
+    }
+
+
+    /**
+     * 卡片CDK页面
+     */
+    public function cardAction()
+    {
+        if ($_POST) {
+        }
     }
 
 
