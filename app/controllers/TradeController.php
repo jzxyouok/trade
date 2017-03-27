@@ -140,11 +140,53 @@ class TradeController extends ControllerBase
 
     /**
      * 卡片CDK页面
+     * 目前支持MyCard
      */
     public function cardAction()
     {
+        $transactionId = $this->request->get('transaction');
+        $gateway = $this->request->get('gateway');
+
         if ($_POST) {
+            $parameter = [
+                'transaction' => $transactionId,
+                'user_id'     => '',
+                'auth'        => $this->request->get('auth'),
+                'card_no'     => $this->request->get('card_no'),
+                'card_pwd'    => $this->request->get('card_pwd'),
+            ];
+
+            $this->_gateway = $this->request->get('gateway');
+            $options = $this->getConfigOptions();
+            $options['sandbox'] = 0;
+            $options['type'] = 'card';
+            $gateway_name = $this->_gateway . '_card';
+            $payTime = new PayTime(ucfirst($gateway_name));
+            $payTime->setOptions($options);
+
+            // 失败或者异常需要记录卡号
+            try {
+                $response = $payTime->card($parameter);
+                if (!$response['isSuccessful']) {
+                    throw new \Exception('failed');
+                }
+                $trade_info = $this->tradeModel->getTrade($parameter['transaction']);
+                $raw = isset($response['raw']) ? $response['raw'] : '';
+                $result = $this->tradeModel->noticeTo($trade_info, $response['transactionReference'], $raw);
+                if (!$result) {
+                    throw new \Exception('failed');
+                }
+                Utils::tips('success', _('success'));
+            } catch (\Exception $e) {
+                // 记录卡号
+                $log = $parameter['card_no'] . '|' . $parameter['card_pwd'];
+                writeLog($log);
+            }
+            Utils::tips('warn', _('failed'));
         }
+
+        $transaction = $this->tradeModel->getTrade($transactionId);
+        $this->view->tips = $this->tradeModel->getTips($transaction['app_id'], $gateway);
     }
 
 
