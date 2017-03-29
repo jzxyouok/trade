@@ -107,3 +107,53 @@ sign        | varchar(32)  | 签名(用于CP-Server验证)
 1. 除去sign字段外，其他所有字段按键名升序排列，例: a=1&b=2&c=3&d=4  
 2. 拼接密钥KEY，a=1&b=2&c=3&d=4KEY  
 3. 最后md5(a=1&b=2&c=3&d=4KEY) 得到的字符串即为签名字符串  
+
+___
+
+## 4.1 产品接口 /product
+
+请求参数：  
+
+参数名 | 类型 | 必选 | 描述 
+--- | --- |:---:| ---
+app_id      | varchar(16)  | 是 | 应用ID
+gateway     | varchar(16)  | 是 | 支付网关, 例: alipay、weixin
+
+失败返回
+```json
+{
+    "code": 1,
+    "msg": "no products"
+}
+```
+成功返回
+```json
+{
+    "code": 0,
+    "msg": "success",
+    "content": [
+        {
+            "name": "100钻石",
+            "product_id": "com.xt.100",
+            "price": "10.00",
+            "currency": "CNY",
+            "coin": "100",
+            "remark": "10元100钻石",
+            "image": "http://www.example.com/logo.jpg"
+        },
+        {
+            "name": "200钻石",
+            "product_id": "com.xt.200",
+            "price": "20.00",
+            "currency": "CNY",
+            "coin": "200",
+            "remark": "20元200钻石",
+            "image": "http://www.example.com/logo.jpg"
+        }
+    ]
+}
+```
+
+
+
+
