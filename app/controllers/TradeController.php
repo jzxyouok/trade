@@ -213,26 +213,88 @@ class TradeController extends ControllerBase
 
 
     /**
-     * SDK下单
+     * APP SDK下单
      */
     public function createAction()
     {
+        // 初始化参数
+        try {
+            $this->initParams();
+        } catch (Exception $e) {
+            $this->response->setJsonContent(
+                [
+                    'code' => 1,
+                    'msg'  => $e->getMessage()
+                ],
+                JSON_UNESCAPED_UNICODE
+            )->send();
+            exit();
+        }
+
+
         // 检查网关
-        $gateway = $this->request->get('gateway');
-        if (!$gateway) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => 'invalid argv [gateway]'])->send();
+        if (!$this->_trade['gateway']) {
+            $this->response->setJsonContent(['code' => 1, 'msg' => _('missing parameter')])->send();
             exit();
         }
 
-        $this->initParams();
 
-        $result = $this->tradeModel->createTrade($this->_trade);
-        if (!$result) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => 'create trade failed'])->send();
+        // 检查产品
+        if (!$this->_trade['product_id']) {
+            $this->response->setJsonContent(['code' => 1, 'msg' => _('missing parameter')])->send();
             exit();
         }
 
-        // TODO :: 未完待续
+
+        // 创建订单
+        try {
+            $tradeResult = $this->tradeModel->createTrade($this->_trade);
+        } catch (Exception $e) {
+            $this->response->setJsonContent(['code' => 1, 'msg' => _($e->getMessage())])->send();
+            exit();
+        }
+
+
+        // PayTime
+        $options = $this->getConfigOptions();
+        $options['sandbox'] = false;  // 是否沙箱
+        $options['type'] = 'wallet';  // 支付类型
+        $gateway_name = $this->_gateway . '_' . 'App'; // 所有Sdk下单默认子网关都是App
+
+        $payTime = new PayTime(ucfirst($gateway_name));
+        $payTime->setOptions($options);
+        $payTime->purchase([
+            'transactionId' => $tradeResult['transaction'],
+            'amount'        => $tradeResult['amount'],
+            'currency'      => $tradeResult['currency'],
+            'productId'     => $tradeResult['product_id'],
+            'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $tradeResult['product_id'],
+            'custom'        => $this->_app,
+            'userId'        => $this->_user_id,
+        ]);
+
+
+        // 结果输出
+        try {
+            $response = $payTime->send();
+            $this->response->setJsonContent(
+                [
+                    'code'        => 0,
+                    'msg'         => _('success'),
+                    'transaction' => $response['transactionId'],
+                    'product_id'  => $response['productId'],
+                    'amount'      => $response['amount'],
+                    'currency'    => $response['currency'],
+                    'reference'   => $response['transactionReference'],
+                    'raw'         => $response['raw'],
+                ]
+            )->send();
+        } catch (Exception $e) {
+            $this->response->setJsonContent(
+                ['code' => 1, 'msg' => _($e->getMessage())], JSON_UNESCAPED_UNICODE
+            )->send();
+        }
+        exit();
     }
 
 

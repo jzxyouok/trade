@@ -41,13 +41,40 @@ adid        | varchar(36)  | 否 | 广告追踪标识, 客户端获取, 如IDFA,
 device      | varchar(32)  | 否 | 设备信息, 如 iphone7 plus
 channel     | varchar(32)  | 否 | 渠道信息, 如 baidu_ad
 
-失败返回
+失败返回：
 ```json
 {
     "code": 1,
     "msg": "failed"
 }
 ```
+
+成功返回：  
+```json
+{
+    "code": 0,
+    "msg": "success",
+    "transaction": "20170329105856612534004667",
+    "product_id": "com.xt.200",
+    "amount": "20.00",
+    "currency": "CNY",
+    "reference": "",
+    "raw": "alipay_sdk=omnipay-alipay&app_id=2015112700879615&biz_content=%7B%22out_trade_no%22%3A%2220170329105856612534004667%22%2C%22total_amount%22%3A%2220.00%22%2C%22subject%22%3A%22com.xt.200%22%2C%22product_code%22%3A%22QUICK_MSECURITY_PAY%22%7D&charset=UTF-8&format=JSON&method=alipay.trade.app.pay¬ify_url=https%3A%2F%2Ftrade.yinhecool.com%2Fnotify%2Falipay&sign_type=RSA×tamp=2017-03-29+10%3A58%3A33&version=1.0&sign=kDs6IOydRvCFKaDu0sDvZ1WntiPGl0c%3D"
+}
+```
+
+返回参数说明：
+
+参数名 | 类型 | 必选 | 描述
+--- | --- |:---:| ---
+code        | int(10)       | - | 状态码,0成功
+msg         | varchar(64)   | - | 返回信息
+transaction | varchar(32)   | - | 平台订单号
+product_id  | varchar(32)   | - | 产品ID
+amount      | decimal(10,2) | - | 产品金额
+currency    | varchar(3)    | - | 货币类型
+reference   | varchar(32)   | - | 网关订单ID
+raw         | varchar(1000) | - | 网关返回的原始信息
 
 ___
 
