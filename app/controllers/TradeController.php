@@ -44,7 +44,11 @@ class TradeController extends ControllerBase
      */
     public function indexAction()
     {
-        $this->initParams();
+        try {
+            $this->initParams();
+        } catch (\Exception $e) {
+            Utils::tips('error', $e->getMessage());
+        }
 
 
         // 选择网关
@@ -98,14 +102,22 @@ class TradeController extends ControllerBase
             Utils::tips('error', _('create trade failed'));
         }
 
-        // PayTime
-        $options = $this->getConfigOptions($gateway['sandbox']);
+
+        // 获取配置
+        try {
+            $options = $this->getConfigOptions($gateway['sandbox']);
+        } catch (\Exception $e) {
+            Utils::tips('error', $e->getMessage());
+        }
         $options['sandbox'] = $gateway['sandbox'];  // 是否沙箱
         $options['type'] = $gateway['type'];        // 支付类型
         $gateway_name = $this->_gateway;
         if ($this->_trade['sub']) {
             $gateway_name = $this->_gateway . '_' . $this->_trade['sub'];
         }
+
+
+        // PayTime
         $payTime = new PayTime(ucfirst($gateway_name));
         $payTime->setOptions($options);
         $payTime->purchase([
@@ -242,12 +254,13 @@ class TradeController extends ControllerBase
 
         $this->_trade['ip'] = $this->request->getClientAddress();
 
+
         // 检查参数
         if (!$this->_trade['app_id']) {
-            Utils::tips('error', _('missing parameter') . ' app_id');
+            throw new \Exception(_('missing parameter') . ' app_id');
         }
         if (!$this->_trade['user_id']) {
-            Utils::tips('error', _('missing parameter') . ' user_id');
+            throw new \Exception(_('missing parameter') . ' user_id');
         }
         if (!$this->_trade['subject']) {
             $this->_trade['subject'] = $this->_trade['product_id'];
@@ -269,13 +282,12 @@ class TradeController extends ControllerBase
             try {
                 $config = Yaml::parse(file_get_contents(APP_DIR . '/config/sandbox.trade.yml'));
             } catch (\Exception $e) {
-                throw new \Exception('can`t find file sandbox.trade.yml');
+                throw new \Exception(_('no config'));
             }
         }
 
         if (!isset($config[$this->_gateway])) {
-            throw new \Exception('no config about the gateway');
-            exit();
+            throw new \Exception(_('no config'));
         }
 
         if (isset($config[$this->_gateway][$this->_app])) {
