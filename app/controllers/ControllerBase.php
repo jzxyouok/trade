@@ -44,10 +44,6 @@ class ControllerBase extends Controller
         $this->_app = $this->dispatcher->getParam("app");
 
 
-        // set userId
-        $this->_user_id = $this->session->get('user_id');
-
-
         // set timezone
         ini_set("date.timezone", $this->config->setting->timezone);
 
@@ -63,15 +59,6 @@ class ControllerBase extends Controller
             $log = empty($_REQUEST) ? $_url : ($_url . '?' . urldecode(http_build_query($_REQUEST)));
             $logger = new FileLogger(APP_DIR . '/logs/' . date("Ym") . '.log');
             $logger->log($log, Logger::INFO);
-        }
-
-
-        // check auth
-        if ($this->config->setting->security_plugin) {
-            if (!$this->_user_id || !$this->session->get('is_login')) {
-                header('Location:/login');
-                exit;
-            }
         }
 
     }
