@@ -11,6 +11,7 @@ use Phalcon\Mvc\Dispatcher;
 use Symfony\Component\Yaml\Yaml;
 use Xxtime\PayTime\PayTime;
 use Phalcon\Logger\Adapter\File as FileLogger;
+use Exception;
 
 class TradeController extends ControllerBase
 {
@@ -46,7 +47,7 @@ class TradeController extends ControllerBase
     {
         try {
             $this->initParams();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Utils::tips('error', $e->getMessage());
         }
 
@@ -97,16 +98,17 @@ class TradeController extends ControllerBase
 
 
         // 创建订单
-        $result = $this->tradeModel->createTrade($this->_trade);
-        if (!$result) {
-            Utils::tips('error', _('create trade failed'));
+        try {
+            $tradeResult = $this->tradeModel->createTrade($this->_trade);
+        } catch (Exception $e) {
+            Utils::tips('warn', _($e->getMessage()));
         }
 
 
         // 获取配置
         try {
             $options = $this->getConfigOptions($gateway['sandbox']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Utils::tips('error', $e->getMessage());
         }
         $options['sandbox'] = $gateway['sandbox'];  // 是否沙箱
@@ -121,11 +123,11 @@ class TradeController extends ControllerBase
         $payTime = new PayTime(ucfirst($gateway_name));
         $payTime->setOptions($options);
         $payTime->purchase([
-            'transactionId' => $result['transaction'],
-            'amount'        => $result['amount'],
-            'currency'      => $result['currency'],
-            'productId'     => $result['product_id'],
-            'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $result['product_id'],
+            'transactionId' => $tradeResult['transaction'],
+            'amount'        => $tradeResult['amount'],
+            'currency'      => $tradeResult['currency'],
+            'productId'     => $tradeResult['product_id'],
+            'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $tradeResult['product_id'],
             'custom'        => $this->_app,
             'userId'        => $this->_user_id,
         ]);
@@ -137,15 +139,15 @@ class TradeController extends ControllerBase
 
             // start call service process, only MyCard can get here now
             $service = Services::pay($this->_gateway);
-            $service->process($result['transaction'], $response);
+            $service->process($tradeResult['transaction'], $response);
             // end call
 
             if (isset($response['redirect'])) {
                 $payTime->redirect();
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // TODO :: error log
-            Utils::tips('error', $e->getMessage());
+            Utils::tips('warn', $e->getMessage());
         }
     }
 
@@ -168,11 +170,19 @@ class TradeController extends ControllerBase
                 'card_pwd'    => $this->request->get('card_pwd'),
             ];
 
-            $this->_gateway = $this->request->get('gateway');
-            $options = $this->getConfigOptions();
+
+            // 获取配置
+            try {
+                $options = $this->getConfigOptions();
+            } catch (Exception $e) {
+                Utils::tips('error', $e->getMessage());
+            }
             $options['sandbox'] = 0;
             $options['type'] = 'card';
-            $gateway_name = $this->_gateway . '_card';
+            $gateway_name = $gateway . '_card';
+
+
+            // PayTime
             $payTime = new PayTime(ucfirst($gateway_name));
             $payTime->setOptions($options);
 
@@ -180,16 +190,16 @@ class TradeController extends ControllerBase
             try {
                 $response = $payTime->card($parameter);
                 if (!$response['isSuccessful']) {
-                    throw new \Exception('failed');
+                    throw new Exception('failed');
                 }
                 $trade_info = $this->tradeModel->getTrade($parameter['transaction']);
                 $raw = isset($response['raw']) ? $response['raw'] : '';
                 $result = $this->tradeModel->noticeTo($trade_info, $response['transactionReference'], $raw);
                 if (!$result) {
-                    throw new \Exception('failed');
+                    throw new Exception('failed');
                 }
                 Utils::tips('success', _('success'));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // 记录卡号
                 $log = $parameter['card_no'] . '|' . $parameter['card_pwd'];
                 writeLog($log);
@@ -231,8 +241,6 @@ class TradeController extends ControllerBase
      */
     private function initParams()
     {
-        $this->_trade['transaction'] = $this->tradeModel->createTransaction($this->_user_id);
-
         // 重要参数
         $this->_trade['app_id'] = $this->_app = $this->request->get('app_id', 'alphanum');
         $this->_trade['gateway'] = $this->_gateway = $this->request->get('gateway', 'alphanum');
@@ -257,10 +265,10 @@ class TradeController extends ControllerBase
 
         // 检查参数
         if (!$this->_trade['app_id']) {
-            throw new \Exception(_('missing parameter') . ' app_id');
+            throw new Exception(_('missing parameter') . ' app_id');
         }
         if (!$this->_trade['user_id']) {
-            throw new \Exception(_('missing parameter') . ' user_id');
+            throw new Exception(_('missing parameter') . ' user_id');
         }
         if (!$this->_trade['subject']) {
             $this->_trade['subject'] = $this->_trade['product_id'];
@@ -272,7 +280,7 @@ class TradeController extends ControllerBase
      * 获取配置选项
      * @param int $sandbox
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     private function getConfigOptions($sandbox = 0)
     {
@@ -281,13 +289,13 @@ class TradeController extends ControllerBase
         } else {
             try {
                 $config = Yaml::parse(file_get_contents(APP_DIR . '/config/sandbox.trade.yml'));
-            } catch (\Exception $e) {
-                throw new \Exception(_('no config'));
+            } catch (Exception $e) {
+                throw new Exception(_('no config'));
             }
         }
 
         if (!isset($config[$this->_gateway])) {
-            throw new \Exception(_('no config'));
+            throw new Exception(_('no config'));
         }
 
         if (isset($config[$this->_gateway][$this->_app])) {

@@ -184,46 +184,51 @@ LIMIT 1";
      * @param array $tradeData
      * @param array $more
      * @return array|bool
+     * @throws Exception
      */
     public function createTrade($tradeData = [], $more = [])
     {
-        if (empty($tradeData['user_id'])) {
-            return false;
+        if (empty($tradeData['app_id']) || empty($tradeData['gateway']) || empty($tradeData['user_id'])) {
+            throw new Exception('missing parameter');
         }
-        // 检查产品
+
+        // 检查产品, 根据product_id
         if (isset($tradeData['product_id'])) {
             $sql = "SELECT id, price, currency FROM `products` WHERE status=1 AND product_id=:product_id";
             $bind = array('product_id' => $tradeData['product_id']);
             $query = DI::getDefault()->get('dbData')->query($sql, $bind);
             $query->setFetchMode(Db::FETCH_ASSOC);
-            $data = $query->fetch();
+            $product = $query->fetch();
 
-            if (!$data) {
-                $msg = "Invalid Product Config: {$tradeData['product_id']}";
+            if (!$product) {
+                $msg = "invalid product: {$tradeData['product_id']}";
                 writeLog("APP:{$tradeData['app_id']}, {$msg}", 'error' . date('Ym'));
-                return false;
+                throw new Exception('invalid product');
             }
-        } elseif (isset($tradeData['amount'])) {
-            // TODO :: 额度支付
-            $data['price'] = $tradeData['amount'];
-            return false;
+        } /**
+         *
+         * TODO :: 额度支付
+         */
+        elseif (isset($tradeData['amount'])) {
+            $product['price'] = $tradeData['amount'];
+            throw new Exception('not support');
         }
 
 
         // 创建订单【卡类支付创建空订单】
         $trade = array(
-            "transaction" => isset($tradeData['transaction']) ? $tradeData['transaction'] : $this->createTransaction($tradeData['user_id']),
+            "transaction" => $this->createTransaction($tradeData['user_id']),
             "app_id"      => $tradeData['app_id'],
             "user_id"     => $tradeData['user_id'],
-            "amount"      => isset($data['price']) ? $data['price'] : 0,
-            "currency"    => isset($data['currency']) ? $data['currency'] : 'USD',
+            "amount"      => isset($product['price']) ? $product['price'] : 0,
+            "currency"    => isset($product['currency']) ? $product['currency'] : 'USD',
             "gateway"     => strtolower($tradeData['gateway']),
             "product_id"  => $tradeData['product_id'],
             "custom"      => $tradeData['custom'],
             "status"      => isset($tradeData['status']) ? $tradeData['status'] : null,
             "ip"          => $tradeData['ip'],
-            "uuid"        => strtoupper($tradeData['uuid']),
-            "adid"        => strtoupper($tradeData['adid']),
+            "uuid"        => strtolower($tradeData['uuid']),
+            "adid"        => strtolower($tradeData['adid']),
             "device"      => $tradeData['device'],
             "channel"     => $tradeData['channel'],
             "create_time" => date('Y-m-d H:i:s')    // 不使用SQL自动插入时间，避免时区不统一
@@ -237,7 +242,7 @@ LIMIT 1";
             DI::getDefault()->get('dbData')->commit();
         } catch (Exception $e) {
             DI::getDefault()->get('dbData')->rollback();
-            return false;
+            throw new Exception('failed');
         }
         return $trade;
     }

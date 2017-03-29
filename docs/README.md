@@ -35,16 +35,19 @@ gateway     | varchar(16)  | 是 | 支付网关
 user_id     | varchar(16)  |[是]| 平台账号ID
 access_token| varchar(1000)|[是]| access_token(user_id,access_token二选一)
 custom      | varchar(64)  | 是 | 自定义, 例:终端用户201-800123 (强烈建议)
-subject     | varchar(64)  | 是 | 产品主题
-amount      | decimal(10,2)| 是 | 金额, 例: 4.99
-currency    | varchar(3)   | 是 | 币种, 例: CNY
 product_id  | varchar(60)  | 是 | 产品ID
 uuid        | varchar(36)  | 否 | 唯一设备ID, 客户端生成, 例: 3F2504E0-4F89-11D3-9A0C-0305E82C3301
 adid        | varchar(36)  | 否 | 广告追踪标识, 客户端获取, 如IDFA, MAC
 device      | varchar(32)  | 否 | 设备信息, 如 iphone7 plus
 channel     | varchar(32)  | 否 | 渠道信息, 如 baidu_ad
 
-返回值：暂无
+失败返回
+```json
+{
+    "code": 1,
+    "msg": "failed"
+}
+```
 
 ___
 
