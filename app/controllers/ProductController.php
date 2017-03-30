@@ -33,9 +33,9 @@ class ProductController extends ControllerBase
         }
         $this->response->setJsonContent(
             [
-                'code'    => 0,
-                'msg'     => _('success'),
-                'content' => $data
+                'code' => 0,
+                'msg'  => _('success'),
+                'data' => $data
             ],
             JSON_UNESCAPED_UNICODE
         )->send();

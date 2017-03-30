@@ -161,7 +161,7 @@ gateway     | varchar(16)  | 是 | 支付网关, 例: alipay、weixin
 {
     "code": 0,
     "msg": "success",
-    "content": [
+    "data": [
         {
             "name": "100钻石",
             "product_id": "com.xt.100",
