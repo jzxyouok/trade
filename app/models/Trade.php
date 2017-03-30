@@ -259,6 +259,9 @@ LIMIT 1";
     {
         // 付款状态
         if ($tradeInfo['status'] == 'pending') {
+
+            $amount_usd = $this->changeToUSD($tradeInfo['amount'], $tradeInfo['currency']);
+
             try {
                 if (!$raw) {
                     $raw = '';
@@ -269,8 +272,8 @@ LIMIT 1";
 
                 DI::getDefault()->get('dbData')->begin();
 
-                $sql = "UPDATE transactions SET status='paid' WHERE transaction=:transaction";
-                $bind = array('transaction' => $tradeInfo['transaction']);
+                $sql = "UPDATE transactions SET status='paid', amount_usd=:amount_usd WHERE transaction=:transaction";
+                $bind = array('amount_usd' => $amount_usd, 'transaction' => $tradeInfo['transaction']);
                 DI::getDefault()->get('dbData')->execute($sql, $bind);
 
                 if ($transactionReference) {
@@ -388,14 +391,12 @@ LIMIT 1";
         if ($currency == 'USD') {
             return $amount;
         }
-
-        global $config;
         $k = $currency . 'USD';
-        if (!isset($config->exchange->$k)) {
-            writeLog("No Exchange Config: {$currency}", 'error' . date('Ym'));
+        if (!isset(DI::getDefault()->get('config')->exchange->$k)) {
+            writeLog("no exchange config: {$currency}", 'error' . date('Ym'));
             return 0;
         }
-        return $amount * $config->exchange->$k;
+        return $amount * DI::getDefault()->get('config')->exchange->$k;
     }
 
 
