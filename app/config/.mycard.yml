@@ -1,0 +1,47 @@
+# MyCard 电信类支付配置文件
+ZHDX839 :
+  name  : 中華電信839
+  type  :
+    50  :
+    150 :
+    300 :
+    350 :
+    400 :
+    450 :
+    500 :
+    1000:
+    1150:
+    2000:
+
+ZHDXHINET :
+  name  : 中華電信HiNet
+
+ZHDXQSF :
+  name  : 中華電信市內電話輕鬆付
+
+TWDGD :
+  name  : 台灣大哥大電信
+
+TWSTAR :
+  name  : 台灣之星
+
+FREEMC :
+  name  : 免費MyCard抵扣
+
+FREEMC :
+  name  : 亞太電信
+
+CCHKMASTER :
+  name  : 信用卡(香港地區 MasterCard)
+
+CCHKVISA3D :
+  name  : 信用卡(香港地區 Visa 3D驗證)
+
+CCHKVISA :
+  name  : 信用卡(香港地區 Visa)
+
+CCTW3D :
+  name  : 信用卡台灣地區(3D驗證)
+
+YCDX :
+  name  : 遠傳電信帳單付費

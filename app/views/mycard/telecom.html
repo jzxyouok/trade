@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>商品购买 | Purchase</title>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" type="text/css" href="https://a.alipayobjects.com/g/antui/antui/10.0.0/rem/antui-all.css" media="all">
+    <link rel="stylesheet" href="https://as.alipayobjects.com/g/component/swiper/3.2.7/swiper.min.css" />
+
+    <meta name="Alipay:title" content="AntUI" />
+    <meta name="Alipay:imgUrl" content="https://t.alipayobjects.com/images/rmsweb/T1mQxhXbRXXXXXXXXX.png"/>
+    <meta name="Alipay:desc" content="AntUI"/>
+    <meta name="fengdie:pkg" content="antui-demo@1.0.4" />
+    <meta name="fengdie:aid" content="16433"/>
+    <meta name="fengdie:pid" content="28948"/>
+</head>
+
+<body>
+
+<div class="demo demo-list">
+    <div class="demo-content" style="padding-bottom: 20px;">
+
+
+
+
+        <!--<div class="am-notice" style="margin-bottom: 0;">
+            <div class="am-notice-content">公告内容</div>
+            <div class="am-notice-operation"><a class="am-notice-go" href="#"></a></div>
+        </div>-->
+
+
+        <div class="am-message multi">
+            <i class="am-icon message info"></i>
+            <div class="am-message-main">選擇渠道和商品</div>
+            <div class="am-message-sub">{{tips}}</div>
+        </div>
+
+
+        <div class="am-list form">
+            <div class="am-list-body">
+
+                <div id="select-list" class="am-list-item dropdown am-input-autoclear">
+
+                    <div class="am-list-dropdown-main" id="button-arrow">
+                        <div class="am-list-label">選擇</div>
+                        <div class="am-list-control">
+                            {%if channel is defined%}
+                            {{channelList[channel]}}
+                            {%endif%}
+                        </div>
+                        <div class="am-list-arrow"><span id="arrow-icon" class="am-icon arrow vertical"></span></div>
+                    </div>
+
+                    <div class="am-list-dropdown-list">
+                        {%if channelList is defined%}
+                        {%for key, item in channelList%}
+                        <a href="/mycard/telecom?app_id={{app_id}}&user_id={{user_id}}&custom={{custom}}&channel={{key}}" class="am-list-dropdown-item am-input-autoclear">
+                            <div class="am-list-label">{{item}}</div>
+                            <div class="am-list-control"></div>
+                        </a>
+                        {%endfor%}
+                        {%endif%}
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="am-list twoline" style="padding: 2px 0;">
+            <form id="trade">
+            <div class="am-list-body">
+                {%for item in products%}
+                <label class="am-list-item radio">
+                    <div class="am-list-thumb"><img src="{%if item['image']!=''%}{{item['image']}}{%else%}/assets/images/diamond.png{%endif%}" alt=""></div>
+                    <div class="am-list-content">
+                        <div class="am-list-title">{{item['name']}}</div>
+                        <div class="am-list-brief">{{item['remark']}}</div>
+                    </div>
+                    <div class="am-list-right-brief">{%if item['price_format'] is defined%}{{item['price_format']}}{%else%}{{item['price']}}{%endif%}</div>
+                    <div class="am-checkbox middle">
+                        <input type="radio" name="product_id" value="{{item['product_id']}}">
+                        <span class="icon-check"></span>
+                    </div>
+                </label>
+                {%endfor%}
+            </div>
+            </form>
+        </div>
+
+
+        <div class="am-button-wrap" style="margin: 10px 0 200px 0;">
+            <button id="button" type="button" class="am-button blue {%if channel==''%}disabled{%endif%}">立即購買</button> <!--disabled-->
+        </div>
+
+    </div>
+</div>
+
+<script charset="utf-8" src="https://a.alipayobjects.com/amui/zepto/1.1.3/zepto.js"></script>
+<script src="https://a.alipayobjects.com/static/fastclick/1.0.6/fastclick.min.js"></script>
+<script src="https://as.alipayobjects.com/g/component/swiper/3.2.7/swiper.min.js"></script>
+<script src="https://a.alipayobjects.com/g/antui/antui/10.0.0/antui.js"></script>
+<script src="https://as.alipayobjects.com/g/animajs/mtracker/3.0.7/seed.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#button-arrow").click(function () {
+            if ($("#select-list").hasClass('am-input-autoclear')) {
+                $("#select-list").removeClass('am-input-autoclear');
+                $("#select-list").addClass('up');
+                $("#arrow-icon").addClass('up');
+            } else {
+                $("#select-list").removeClass('up');
+                $("#select-list").addClass('am-input-autoclear');
+                $("#arrow-icon").removeClass('up');
+            }
+        });
+
+
+        $("#button").click(function () {
+            // 检查是否可点击
+            if ($("#button").hasClass('disabled') == true) {
+                return false;
+            }
+
+            // 选择产品
+            var product_id = $("input[name='product_id']:checked").val();
+            if (!product_id) {
+                return false;
+            }
+            $("#button").addClass("disabled");
+
+            // 提交 暂仅支持GET请求
+            var requestData = location.href;
+            requestData += '&product_id=' + product_id
+            window.location.href = requestData;
+        });
+    });
+</script>
+</body>
+</html>
