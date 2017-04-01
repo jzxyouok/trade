@@ -34,8 +34,10 @@ class TradeController extends ControllerBase
         $this->_user_id = $this->request->get('user_id', 'alphanum');
         if (!$this->_user_id) {
             $jwt = $this->request->get('access_token', 'string');
-            $account = $this->tradeModel->verifyAccessToken($jwt);
-            $this->_user_id = $account['open_id'];
+            if ($jwt) {
+                $account = $this->tradeModel->verifyAccessToken($jwt);
+                $this->_user_id = $account['open_id'];
+            }
         }
     }
 
@@ -78,6 +80,18 @@ class TradeController extends ControllerBase
                 $this->view->pick("trade/gateway");
                 return true;
             }
+        }
+
+
+        /**
+         * 个别网关单独处理
+         * TODO :: 不够优美
+         */
+        if ($this->_gateway == 'mycard' && $this->_trade['sub'] == 'telecom') {
+            $req = array_merge($_GET, $_POST);
+            unset($req['_url']);
+            header('Location: /mycard/telecom?' . http_build_query($req));
+            exit();
         }
 
 
@@ -128,8 +142,8 @@ class TradeController extends ControllerBase
             'currency'      => $tradeResult['currency'],
             'productId'     => $tradeResult['product_id'],
             'productDesc'   => $this->_trade['subject'] ? urlencode($this->_trade['subject']) : $tradeResult['product_id'],
-            'custom'        => $this->_app,
             'userId'        => $this->_user_id,
+            'custom'        => $this->_app,
         ]);
 
 
