@@ -89,15 +89,21 @@ ___
 /notify/google?app_id=100&user_id=100001&custom=201-800123&receipt=xxxx&sign=xxxx  
 /notify/google?app_id=100&access_token=xxxx&custom=201-800123&receipt=xxxx&sign=xxxx
 
+* 支付宝:  
+/notify/alipay
+
 * PaymentWall:  
 /{APPID}/notify/paymentwall  
 /notify/paymentwall  
 
-* 支付宝:  
-/notify/alipay
+* PayPal支付:   
+/notify/paypal
 
 * Mol支付:   
 /notify/mol
+
+* MyCard支付:   
+/notify/mycard
 
 参数说明:  
 

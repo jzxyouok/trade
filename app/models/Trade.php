@@ -224,13 +224,13 @@ LIMIT 1";
             "currency"    => isset($product['currency']) ? $product['currency'] : 'USD',
             "gateway"     => strtolower($tradeData['gateway']),
             "product_id"  => $tradeData['product_id'],
-            "custom"      => $tradeData['custom'],
+            "custom"      => isset($tradeData['custom']) ? $tradeData['custom'] : '',
             "status"      => isset($tradeData['status']) ? $tradeData['status'] : null,
-            "ip"          => $tradeData['ip'],
-            "uuid"        => strtolower($tradeData['uuid']),
-            "adid"        => strtolower($tradeData['adid']),
-            "device"      => $tradeData['device'],
-            "channel"     => $tradeData['channel'],
+            "ip"          => isset($tradeData['ip']) ? $tradeData['ip'] : '',
+            "uuid"        => isset($tradeData['uuid']) ? strtolower($tradeData['uuid']) : '',
+            "adid"        => isset($tradeData['adid']) ? strtolower($tradeData['adid']) : '',
+            "device"      => isset($tradeData['device']) ? $tradeData['device'] : '',
+            "channel"     => isset($tradeData['channel']) ? $tradeData['channel'] : '',
             "create_time" => date('Y-m-d H:i:s')    // 不使用SQL自动插入时间，避免时区不统一
         );
         $more['trans_id'] = $trade['transaction'];
