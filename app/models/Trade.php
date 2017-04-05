@@ -162,11 +162,16 @@ LIMIT 1";
      */
     public function createTransaction($code = 0)
     {
-        $config = DI::getDefault()->get('config');
-        $redis = new \Redis();
-        $redis->connect($config->redis->host, $config->redis->port);
-        $redis->select(1);
-        $sequence = $redis->incr('sequence');
+        try {
+            $config = DI::getDefault()->get('config');
+            $redis = new \Redis();
+            $redis->connect($config->redis->host, $config->redis->port);
+            $redis->select(1);
+            $sequence = $redis->incr('sequence');
+        } catch (Exception $e) {
+            writeLog("redis inc id error", 'error' . date('Ym'));
+            $sequence = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        }
 
         $main = date('YmdHi');
         if ($code) {
