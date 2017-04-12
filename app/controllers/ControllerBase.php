@@ -3,18 +3,14 @@
 
 namespace MyApp\Controllers;
 
+
 use Phalcon\Mvc\Controller;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Logger\Adapter\File as FileLogger;
 use Phalcon\Logger;
 
-
 class ControllerBase extends Controller
 {
-
-    public $_app;
-    public $_user_id;
-
 
     /**
      * @link http://php.net/manual/en/book.gettext.php
@@ -40,14 +36,6 @@ class ControllerBase extends Controller
     public function initialize()
     {
 
-        // set appId
-        $this->_app = $this->dispatcher->getParam("app");
-
-
-        // set userId
-        $this->_user_id = $this->session->get('user_id');
-
-
         // set timezone
         ini_set("date.timezone", $this->config->setting->timezone);
 
@@ -63,15 +51,6 @@ class ControllerBase extends Controller
             $log = empty($_REQUEST) ? $_url : ($_url . '?' . urldecode(http_build_query($_REQUEST)));
             $logger = new FileLogger(APP_DIR . '/logs/' . date("Ym") . '.log');
             $logger->log($log, Logger::INFO);
-        }
-
-
-        // check auth
-        if ($this->config->setting->security_plugin) {
-            if (!$this->_user_id) {
-                header('Location:/login');
-                exit;
-            }
         }
 
     }
