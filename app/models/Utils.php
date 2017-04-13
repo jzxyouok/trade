@@ -12,7 +12,13 @@ class Utils extends Model
 {
 
 
-    // info, success, warn, error
+    /**
+     * 闪存提示
+     * @param string $type
+     * @param string $message
+     * @param string $redirect
+     * @param int $seconds
+     */
     static public function tips($type = 'info', $message = '', $redirect = '', $seconds = 0)
     {
         $flash = json_encode(
@@ -31,6 +37,10 @@ class Utils extends Model
     }
 
 
+    /**
+     * 输出
+     * @param array $data
+     */
     static public function outputJSON($data = [])
     {
         header("Content-type:application/json; charset=utf-8");
@@ -38,13 +48,22 @@ class Utils extends Model
     }
 
 
+    /**
+     * 形象图片
+     * @param string $username
+     * @return string
+     */
     static public function getAvatar($username = '')
     {
         return 'https://secure.gravatar.com/avatar/' . md5(strtolower(trim($username))) . '?s=80&d=identicon';
     }
 
 
-    // 把数组转换为树状结构
+    /**
+     * 把数组转换为树状结构
+     * @param array $data
+     * @return array
+     */
     public function list2tree($data = array())
     {
         if (!$data) {
@@ -82,6 +101,11 @@ class Utils extends Model
     }
 
 
+    /**
+     * 位置信息
+     * @param string $ipAddress
+     * @return string|void
+     */
     public function getLocation($ipAddress = '')
     {
         if (in_array($ipAddress, ['127.0.0.1'])) {

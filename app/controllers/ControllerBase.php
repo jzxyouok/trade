@@ -3,16 +3,17 @@
 
 namespace MyApp\Controllers;
 
+
 use Phalcon\Mvc\Controller;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Logger\Adapter\File as FileLogger;
 use Phalcon\Logger;
 
-
 class ControllerBase extends Controller
 {
 
     public $_app;
+
     public $_user_id;
 
 
