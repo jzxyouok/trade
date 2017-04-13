@@ -26,6 +26,9 @@ class PublicController extends Controller
 
     public function tipsAction()
     {
+        $flashData = json_decode(trim($this->cookies->get('flash')->getValue()), true);
+        $this->view->tips = $flashData;
+        $this->view->pick("public/tipsMobile");
     }
 
 
